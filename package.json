@@ -1,0 +1,33 @@
+{
+  "name": "travelsync-web-development",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "TamarAndOfir",
+  "license": "ISC",
+  "scripts": {
+    "start": "tsc && node ./dist/index.js",
+    "dev": "nodemon ./src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "mongoose": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/mongoose": "^5.11.96",
+    "@types/node": "^25.0.0",
+    "nodemon": "^3.1.11",
+    "prettier": "^3.7.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "bugs": {
+    "url": "https://github.com/TamarTal23/TravelSync-web-development/issues"
+  },
+  "homepage": "https://github.com/TamarTal23/TravelSync-web-development#readme"
+}
