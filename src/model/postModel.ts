@@ -32,7 +32,6 @@ const postSchema = new mongoose.Schema(
     location: {
       city: {
         type: String,
-        required: true,
       },
       country: {
         type: String,
@@ -45,7 +44,7 @@ const postSchema = new mongoose.Schema(
     },
     photos: {
       type: [String],
-      default: [],
+      required: true,
     },
   },
   {

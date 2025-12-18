@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/', (_req: Request, res: Response) => {
-  res.send('Hello, TypeScript + Express!');
+  res.send('Server running');
 });
 
 app.listen(PORT, () => {
