@@ -15,12 +15,7 @@ const postSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    minPrice: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    maxPrice: {
+    price: {
       type: Number,
       required: true,
       min: 0,
