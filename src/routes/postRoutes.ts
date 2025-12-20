@@ -2,12 +2,11 @@ import express from 'express';
 const router = express.Router();
 import postController from '../controllers/postController';
 
-// router.get("/", movieController.get.bind(movieController));
+router.get('/', postController.getAllPosts.bind(postController));
+router.get('/:id', postController.getPostById.bind(postController));
 
 router.post('/', postController.createPost.bind(postController));
 
-// router.delete("/:id", authMiddleware, movieController.del.bind(movieController));
-
-// router.put("/:id", authMiddleware, movieController.put.bind(movieController));
+router.put('/:id', postController.updatePost.bind(postController));
 
 export default router;

@@ -8,6 +8,12 @@ class PostController extends BaseController {
   }
 
   createPost = async (req: Request, res: Response) => super.post(req, res);
+
+  getAllPosts = async (req: Request, res: Response) => super.get(req, res);
+
+  getPostById = async (req: Request, res: Response) => super.getById(req, res);
+
+  updatePost = async (req: Request, res: Response) => super.put(req, res);
 }
 
 export default new PostController();
