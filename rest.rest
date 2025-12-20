@@ -4,7 +4,7 @@ GET http://localhost:5000/post
 
 ###
 
-GET http://localhost:5000/post?user=69469337bda8e6485e5c88e8
+GET http://localhost:5000/post?sender=69469337bda8e6485e5c88e8
 
 ###
 
