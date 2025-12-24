@@ -40,10 +40,10 @@ class BaseController {
   }
 
   async post(req: Request, res: Response) {
-    const obj = req.body;
+    const bodyObj = req.body;
 
     try {
-      const response = await this.model.create(obj);
+      const response = await this.model.create(bodyObj);
       res.status(StatusCodes.CREATED).json(response);
     } catch (error) {
       res
