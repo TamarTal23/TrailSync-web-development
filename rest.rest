@@ -8,7 +8,7 @@ GET http://localhost:5000/post?sender=69469337bda8e6485e5c88e8
 
 ###
 
-GET http://localhost:5000/post/694c4ed74479bc6ffd69f722
+GET http://localhost:5000/post/694d36e5841dc6be59183449
 
 ###
 POST http://localhost:5000/post
@@ -16,19 +16,19 @@ Content-Type: application/json
 
 {
     "sender": "69469337bda8e6485e5c88e8",
-    "title": "my trip",
+    "title": "my best trip",
     "mapLink": "https://www.google.com/maps",
-    "price": 400,
+    "price": 4000,
     "numberOfDays": 14,
     "location": {
-      "country":"IL"
+      "country":"USA"
     },
-    "description": "my trip to israel",
+    "description": "my trip to america",
     "photos": ["myphoto1.jpg"]
 }
 
 ###
-PUT http://localhost:5000/post/694c4ed74479bc6ffd69f722
+PUT http://localhost:5000/post/694d36e5841dc6be59183449
 Content-Type: application/json  
 
 {
@@ -39,10 +39,10 @@ Content-Type: application/json
 GET http://localhost:5000/comment
 
 ###
-GET http://localhost:5000/comment?post=694c4ed74479bc6ffd69f722
+GET http://localhost:5000/comment?post=694d36e5841dc6be59183449
 
 ###
-GET http://localhost:5000/comment/694c513469e6230f60320c07
+GET http://localhost:5000/comment/694d38ec4e31b4d37ec128dc
 
 ###
 POST http://localhost:5000/comment
@@ -50,12 +50,12 @@ Content-Type: application/json
 
 {
     "user": "69469337bda8e6485e5c88e8",
-    "post": "694c4ed74479bc6ffd69f722",
+    "post": "694d36e5841dc6be59183449",
     "text": "Great trip!"
 }
 
 ###
-PUT http://localhost:5000/comment/694c513469e6230f60320c07
+PUT http://localhost:5000/comment/694d38ec4e31b4d37ec128dc
 Content-Type: application/json  
 
 {
@@ -63,4 +63,4 @@ Content-Type: application/json
 }
 
 ###
-DELETE http://localhost:5000/comment/694c513469e6230f60320c07
+DELETE http://localhost:5000/comment/694d38ec4e31b4d37ec128dc
