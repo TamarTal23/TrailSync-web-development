@@ -1,0 +1,36 @@
+###
+
+GET http://localhost:5000/post
+
+###
+
+GET http://localhost:5000/post?sender=69469337bda8e6485e5c88e8
+
+###
+
+GET http://localhost:5000/post/694695ca82d4d0339dd7ab0d
+
+###
+POST http://localhost:5000/post
+Content-Type: application/json  
+
+{
+    "user": "69469337bda8e6485e5c88e8",
+    "title": "my trip",
+    "mapLink": "https://www.google.com/maps",
+    "price": 400,
+    "numberOfDays": 14,
+    "location": {
+      "country":"IL"
+    },
+    "description": "my trip to israel",
+    "photos": ["myphoto1.jpg"]
+}
+
+###
+PUT http://localhost:5000/post/694695ca82d4d0339dd7ab0d
+Content-Type: application/json  
+
+{
+  "title": "my updated trip",
+}

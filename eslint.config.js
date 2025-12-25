@@ -32,7 +32,6 @@ export default [
     rules: {
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/no-explicit-any': 'error',
       'node/no-unsupported-features/es-syntax': 'off',
       'node/no-missing-import': 'off',
     },
