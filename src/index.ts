@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import { connectDB } from './config/db';
 import postRoutes from './routes/postRoutes';
+import userRoutes from './routes/userRoutes';
 import commentRoutes from './routes/commentRoutes';
 
 dotenv.config();
@@ -20,6 +21,7 @@ app.get('/', (_req: Request, res: Response) => {
 
 app.use('/post', postRoutes);
 app.use('/comment', commentRoutes);
+app.use('/user', userRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
