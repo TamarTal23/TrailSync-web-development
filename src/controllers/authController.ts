@@ -14,11 +14,11 @@ type Tokens = {
   refreshToken: string;
 };
 
-const JWT_SECRET = process.env.JWT_SECRET!;
-const JWT_EXPIRES_IN = parseInt(process.env.JWT_EXPIRES_IN || '3600');
-const JWT_REFRESH_EXPIRES_IN = parseInt(process.env.JWT_REFRESH_EXPIRES_IN || '86400');
-
 const generateToken = (userId: string): Tokens => {
+  const JWT_SECRET = process.env.JWT_SECRET!;
+  const JWT_EXPIRES_IN = parseInt(process.env.JWT_EXPIRES_IN || '3600');
+  const JWT_REFRESH_EXPIRES_IN = parseInt(process.env.JWT_REFRESH_EXPIRES_IN || '86400');
+
   const token = jwt.sign({ userId: userId }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
   const refreshToken = jwt.sign({ userId: userId }, JWT_SECRET, {
     expiresIn: JWT_REFRESH_EXPIRES_IN,
@@ -78,7 +78,7 @@ const logout = async (req: Request, res: Response) => {
   }
 
   try {
-    const decoded: any = jwt.verify(refreshToken, JWT_SECRET);
+    const decoded: any = jwt.verify(refreshToken, process.env.JWT_SECRET!);
     const user = await User.findById(decoded.userId);
 
     if (!user) {
@@ -108,7 +108,7 @@ const refreshToken = async (req: Request, res: Response) => {
   }
 
   try {
-    const decoded: any = jwt.verify(refreshToken, JWT_SECRET);
+    const decoded: any = jwt.verify(refreshToken, process.env.JWT_SECRET!);
     const user = await User.findById(decoded.userId);
 
     if (!user) {

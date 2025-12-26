@@ -5,6 +5,7 @@ import { connectDB } from './config/db';
 import postRoutes from './routes/postRoutes';
 import userRoutes from './routes/userRoutes';
 import commentRoutes from './routes/commentRoutes';
+import authRoutes from './routes/authRoutes';
 
 dotenv.config();
 connectDB();
@@ -20,6 +21,7 @@ app.get('/', (_req: Request, res: Response) => {
 });
 
 app.use('/post', postRoutes);
+app.use('/auth', authRoutes);
 app.use('/comment', commentRoutes);
 app.use('/user', userRoutes);
 
