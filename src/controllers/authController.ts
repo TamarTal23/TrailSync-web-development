@@ -70,6 +70,36 @@ const login = async (req: Request, res: Response) => {
   }
 };
 
+const logout = async (req: Request, res: Response) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return sendError(res, 'Refresh token is required');
+  }
+
+  try {
+    const decoded: any = jwt.verify(refreshToken, JWT_SECRET);
+    const user = await User.findById(decoded.userId);
+
+    if (!user) {
+      return sendError(res, 'Invalid refresh token', StatusCodes.UNAUTHORIZED);
+    }
+
+    if (!user.refreshTokens.includes(refreshToken)) {
+      return sendError(res, 'Invalid refresh token', StatusCodes.UNAUTHORIZED);
+    }
+
+    user.refreshTokens = user.refreshTokens.filter(
+      (currRefreshToken) => currRefreshToken !== refreshToken
+    );
+    await user.save();
+
+    res.status(StatusCodes.OK).json({ message: 'Logged out successfully' });
+  } catch (error) {
+    return sendError(res, 'Logout failed', StatusCodes.UNAUTHORIZED);
+  }
+};
+
 const refreshToken = async (req: Request, res: Response) => {
   const { refreshToken } = req.body;
 
@@ -109,5 +139,6 @@ const refreshToken = async (req: Request, res: Response) => {
 export default {
   register,
   login,
+  logout,
   refreshToken,
 };

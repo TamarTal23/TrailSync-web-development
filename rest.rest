@@ -15,7 +15,6 @@ POST http://localhost:5000/post
 Content-Type: application/json  
 
 {
-    "sender": "69469337bda8e6485e5c88e8",
     "title": "my best trip",
     "mapLink": "https://www.google.com/maps",
     "price": 4000,
