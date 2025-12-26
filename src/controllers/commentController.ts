@@ -12,7 +12,7 @@ class CommentController extends BaseController {
   }
 
   createComment = async (req: AuthRequest, res: Response) => {
-    const userId = req.user?._id;
+    const userId = req.userId;
     req.body.user = userId;
 
     return super.post(req, res);
@@ -23,7 +23,7 @@ class CommentController extends BaseController {
   getCommentById = async (req: Request, res: Response) => super.getById(req, res);
 
   updateComment = async (req: AuthRequest, res: Response) => {
-    const userId = req.user?._id;
+    const userId = req.userId;
     const comment = await Comment.findById(req.params.id);
 
     if (comment?.user.toString() !== userId) {
@@ -36,7 +36,7 @@ class CommentController extends BaseController {
   };
 
   deleteComment = async (req: AuthRequest, res: Response) => {
-    const userId = req.user?._id;
+    const userId = req.userId;
     const comment = await Comment.findById(req.params.id);
 
     if (comment?.user.toString() !== userId) {

@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 
-export type AuthRequest = Request & { user?: { _id: string } };
+export type AuthRequest = Request & { userId?: string };
 
 const UNAUTHORIZED_MESSAGE = 'Unauthorized';
 
@@ -19,11 +19,11 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
     return res.status(StatusCodes.UNAUTHORIZED).json({ message: UNAUTHORIZED_MESSAGE });
   }
 
-  const secret = process.env.JWT_SECRET || 'default_secret';
+  const secret = process.env.JWT_SECRET!;
 
   try {
-    const decodedToken = jwt.verify(token, secret) as { _id: string };
-    req.user = { _id: decodedToken._id };
+    const decodedToken = jwt.verify(token, secret) as { userId: string };
+    req.userId = decodedToken.userId;
 
     next();
   } catch (err) {

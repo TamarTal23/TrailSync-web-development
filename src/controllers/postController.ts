@@ -10,7 +10,7 @@ class PostController extends BaseController {
   }
 
   createPost = async (req: AuthRequest, res: Response) => {
-    const userId = req.user?._id;
+    const userId = req.userId;
     req.body.sender = userId;
 
     return super.post(req, res);
@@ -21,7 +21,7 @@ class PostController extends BaseController {
   getPostById = async (req: Request, res: Response) => super.getById(req, res);
 
   updatePost = async (req: AuthRequest, res: Response) => {
-    const userId = req.user?._id;
+    const userId = req.userId;
     const post = await Post.findById(req.params.id);
 
     if (post?.sender.toString() !== userId) {
