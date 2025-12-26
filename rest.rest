@@ -48,7 +48,6 @@ POST http://localhost:5000/comment
 Content-Type: application/json  
 
 {
-    "user": "69469337bda8e6485e5c88e8",
     "post": "694d36e5841dc6be59183449",
     "text": "Great trip!"
 }
