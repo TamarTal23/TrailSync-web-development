@@ -1,8 +1,9 @@
 import express from 'express';
 const router = express.Router();
 import authController from '../controllers/authController';
+import { uploadProfile } from '../utilities/photoUpload';
 
-router.post('/register', authController.register);
+router.post('/register', uploadProfile.single('profilePicture'), authController.register);
 
 router.post('/login', authController.login);
 

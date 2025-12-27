@@ -3,6 +3,7 @@ import User from '../model/userModel';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
+import { deleteFile, normalizeFilePath } from '../utilities/photoUpload';
 
 const sendError = (res: Response, message: string, code?: number) => {
   const errCode = code || StatusCodes.BAD_REQUEST;
@@ -28,20 +29,36 @@ const generateToken = (userId: string): Tokens => {
 };
 
 const register = async (req: Request, res: Response) => {
-  const { email, password, username } = req.body; //todo profile picture
+  const { email, password, username } = req.body;
 
   try {
     const salt = await bcrypt.genSalt(10);
     const encryptedPassword = await bcrypt.hash(password, salt);
-    const user = await User.create({ email, password: encryptedPassword, username });
+
+    const userData: any = {
+      email,
+      password: encryptedPassword,
+      username,
+    };
+
+    if (req.file) {
+      userData.profilePicture = normalizeFilePath(req.file.path);
+    }
+
+    const createdUser = await User.create(userData);
+    const user = Array.isArray(createdUser) ? createdUser[0] : createdUser;
     const tokens = generateToken(user._id.toString());
 
     user.refreshTokens.push(tokens.refreshToken);
     await user.save();
 
     res.status(StatusCodes.CREATED).json(tokens);
-  } catch (error) {
-    return sendError(res, 'Registration failed', StatusCodes.UNAUTHORIZED); // todo tamar more specific error handling
+  } catch (_error) {
+    if (req.file) {
+      deleteFile(req.file.path);
+    }
+
+    return sendError(res, 'Registration failed', StatusCodes.UNAUTHORIZED);
   }
 };
 
@@ -65,8 +82,8 @@ const login = async (req: Request, res: Response) => {
     await user.save();
 
     res.status(StatusCodes.OK).json(tokens);
-  } catch (error) {
-    return sendError(res, 'Login failed'); // todo tamar more specific error handling
+  } catch (_error) {
+    return sendError(res, 'Login failed');
   }
 };
 
@@ -95,7 +112,7 @@ const logout = async (req: Request, res: Response) => {
     await user.save();
 
     res.status(StatusCodes.OK).json({ message: 'Logged out successfully' });
-  } catch (error) {
+  } catch (_error) {
     return sendError(res, 'Logout failed', StatusCodes.UNAUTHORIZED);
   }
 };
@@ -131,7 +148,7 @@ const refreshToken = async (req: Request, res: Response) => {
     await user.save();
 
     res.status(StatusCodes.OK).json(tokens);
-  } catch (error) {
+  } catch (_error) {
     return sendError(res, 'Invalid refresh token', StatusCodes.UNAUTHORIZED);
   }
 };

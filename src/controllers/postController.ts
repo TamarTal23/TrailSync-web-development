@@ -3,6 +3,8 @@ import { Request, Response } from 'express';
 import BaseController from './baseController';
 import { AuthRequest } from '../middlewares/authMiddleware';
 import { StatusCodes } from 'http-status-codes';
+import { uniq } from 'lodash';
+import { deleteFiles, normalizeFilePath, renamePostFiles } from '../utilities/photoUpload';
 
 class PostController extends BaseController {
   constructor() {
@@ -13,8 +15,31 @@ class PostController extends BaseController {
     const userId = req.userId;
     req.body.sender = userId;
 
-    return super.post(req, res);
-  }; //todo pictures upload
+    let uploadedFiles: string[] = [];
+
+    if (req.files && Array.isArray(req.files)) {
+      uploadedFiles = req.files.map((file: Express.Multer.File) => normalizeFilePath(file.path));
+    }
+
+    try {
+      req.body.photos = uploadedFiles;
+      const posts = await Post.create(req.body);
+      const post = Array.isArray(posts) ? posts[0] : posts;
+
+      const renamedPaths = renamePostFiles(uploadedFiles, post._id.toString());
+
+      post.photos = renamedPaths;
+      await post.save();
+
+      res.status(StatusCodes.CREATED).json(post);
+    } catch (error) {
+      deleteFiles(uploadedFiles);
+
+      res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR) // todo tamar dont know if i like this error message
+        .json({ error: (error as Error)?.message ?? 'An unknown error occurred' });
+    }
+  };
 
   getAllPosts = async (req: Request, res: Response) => super.get(req, res);
 
@@ -22,15 +47,83 @@ class PostController extends BaseController {
 
   updatePost = async (req: AuthRequest, res: Response) => {
     const userId = req.userId;
-    const post = await Post.findById(req.params.id);
+    const postId = req.params.id;
 
-    if (post?.sender.toString() !== userId) {
-      res.status(StatusCodes.FORBIDDEN).json({ error: 'Forbidden' });
+    try {
+      const post = await Post.findById(postId);
 
-      return;
+      if (!post) {
+        return res.status(StatusCodes.NOT_FOUND).json({ error: 'Post not found' });
+      }
+
+      if (post.sender.toString() !== userId) {
+        return res.status(StatusCodes.FORBIDDEN).json({ error: 'Forbidden' });
+      }
+
+      // Start with existing photos
+      let currentPhotos = [...post.photos];
+
+      if (req.body.photosToDelete) {
+        try {
+          const photosToDelete: string[] = JSON.parse(req.body.photosToDelete);
+          deleteFiles(photosToDelete);
+          currentPhotos = currentPhotos.filter((photo) => !photosToDelete.includes(photo));
+        } catch (error) {
+          return res
+            .status(StatusCodes.BAD_REQUEST)
+            .json({ error: 'Invalid photosToDelete format' });
+        }
+      }
+
+      if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+        const newPhotoPaths = req.files.map((file: Express.Multer.File) =>
+          normalizeFilePath(file.path)
+        );
+        currentPhotos = uniq([...currentPhotos, ...newPhotoPaths]);
+      }
+
+      req.body.photos = currentPhotos;
+
+      const updatedPost = await this.model.findByIdAndUpdate(postId, req.body, { new: true });
+
+      res.json(updatedPost);
+    } catch (error) {
+      if (req.files && Array.isArray(req.files)) {
+        const uploadedPaths = req.files.map((file: Express.Multer.File) => file.path);
+        deleteFiles(uploadedPaths);
+      }
+
+      res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: (error as Error)?.message ?? 'An unknown error occurred' });
     }
+  };
 
-    return super.put(req, res);
+  deletePost = async (req: AuthRequest, res: Response) => {
+    const userId = req.userId;
+    const postId = req.params.id;
+
+    try {
+      const post = await Post.findById(postId);
+
+      if (!post) {
+        return res.status(StatusCodes.NOT_FOUND).json({ error: 'Post not found' });
+      }
+
+      if (post.sender.toString() !== userId) {
+        return res.status(StatusCodes.FORBIDDEN).json({ error: 'Forbidden' });
+      }
+
+      deleteFiles(post.photos);
+
+      await this.model.findByIdAndDelete(postId);
+
+      res.json({ message: 'Post deleted successfully' });
+    } catch (error) {
+      res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: (error as Error)?.message ?? 'An unknown error occurred' });
+    }
   };
 }
 
