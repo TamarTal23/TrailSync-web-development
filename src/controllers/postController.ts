@@ -36,7 +36,7 @@ class PostController extends BaseController {
       deleteFiles(uploadedFiles);
 
       res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR) // todo tamar dont know if i like this error message
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
         .json({ error: (error as Error)?.message ?? 'An unknown error occurred' });
     }
   };
@@ -69,6 +69,8 @@ class PostController extends BaseController {
           deleteFiles(photosToDelete);
           currentPhotos = currentPhotos.filter((photo) => !photosToDelete.includes(photo));
         } catch (error) {
+          console.error('Error parsing photosToDelete:', error);
+
           return res
             .status(StatusCodes.BAD_REQUEST)
             .json({ error: 'Invalid photosToDelete format' });

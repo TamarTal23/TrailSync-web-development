@@ -53,7 +53,9 @@ const register = async (req: Request, res: Response) => {
     await user.save();
 
     res.status(StatusCodes.CREATED).json(tokens);
-  } catch (_error) {
+  } catch (error) {
+    console.error('Registration error:', error);
+
     if (req.file) {
       deleteFile(req.file.path);
     }
@@ -82,7 +84,9 @@ const login = async (req: Request, res: Response) => {
     await user.save();
 
     res.status(StatusCodes.OK).json(tokens);
-  } catch (_error) {
+  } catch (error) {
+    console.error('Login error:', error);
+
     return sendError(res, 'Login failed');
   }
 };
@@ -112,7 +116,9 @@ const logout = async (req: Request, res: Response) => {
     await user.save();
 
     res.status(StatusCodes.OK).json({ message: 'Logged out successfully' });
-  } catch (_error) {
+  } catch (error) {
+    console.error('Logout error:', error);
+
     return sendError(res, 'Logout failed', StatusCodes.UNAUTHORIZED);
   }
 };
@@ -148,7 +154,9 @@ const refreshToken = async (req: Request, res: Response) => {
     await user.save();
 
     res.status(StatusCodes.OK).json(tokens);
-  } catch (_error) {
+  } catch (error) {
+    console.error('Refresh token error:', error);
+
     return sendError(res, 'Invalid refresh token', StatusCodes.UNAUTHORIZED);
   }
 };

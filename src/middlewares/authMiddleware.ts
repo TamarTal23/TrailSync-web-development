@@ -26,8 +26,9 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
     req.userId = decodedToken.userId;
 
     next();
-  } catch (err) {
-    // todo tamar check if this is how you want to handle errors
+  } catch (error) {
+    console.error('Authentication error:', error);
+
     return res.status(StatusCodes.UNAUTHORIZED).json({ message: UNAUTHORIZED_MESSAGE });
   }
 };
