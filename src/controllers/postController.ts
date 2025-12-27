@@ -4,6 +4,7 @@ import BaseController from './baseController';
 import { AuthRequest } from '../middlewares/authMiddleware';
 import { StatusCodes } from 'http-status-codes';
 import { uniq } from 'lodash';
+import { Express } from 'express';
 import { deleteFiles, normalizeFilePath, renamePostFiles } from '../utilities/photoUpload';
 
 class PostController extends BaseController {

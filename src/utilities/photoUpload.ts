@@ -1,7 +1,7 @@
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { Request } from 'express';
+import { Request, Express } from 'express';
 import { AuthRequest } from '../middlewares/authMiddleware';
 
 const defaultMaxFileSize = 5 * 1024 * 1024; // 5 MB
