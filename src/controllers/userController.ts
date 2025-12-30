@@ -3,6 +3,9 @@ import { Request, Response } from 'express';
 import BaseController from './baseController';
 import { StatusCodes } from 'http-status-codes';
 import { deleteFile, normalizeFilePath } from '../utilities/photoUpload';
+import { AuthRequest } from '../middlewares/authMiddleware';
+
+const FORBIDDEN_MESSAGE = 'Forbidden';
 
 class UserController extends BaseController {
   constructor() {
@@ -13,12 +16,16 @@ class UserController extends BaseController {
 
   getUserById = async (req: Request, res: Response) => super.getById(req, res);
 
-  updateUser = async (req: Request, res: Response) => {
+  updateUser = async (req: AuthRequest, res: Response) => {
     try {
       const user = await User.findById(req.params.id);
 
       if (!user) {
         return res.status(StatusCodes.NOT_FOUND).json({ error: 'User not found' });
+      }
+
+      if (user._id.toString() !== req.userId) {
+        return res.status(StatusCodes.FORBIDDEN).json({ error: FORBIDDEN_MESSAGE });
       }
 
       if (req.file) {
@@ -41,12 +48,16 @@ class UserController extends BaseController {
     }
   };
 
-  deleteUser = async (req: Request, res: Response) => {
+  deleteUser = async (req: AuthRequest, res: Response) => {
     try {
       const user = await User.findById(req.params.id);
 
       if (!user) {
         return res.status(StatusCodes.NOT_FOUND).json({ error: 'User not found' });
+      }
+
+      if (user._id.toString() !== req.userId) {
+        return res.status(StatusCodes.FORBIDDEN).json({ error: FORBIDDEN_MESSAGE });
       }
 
       if (user.profilePicture) {

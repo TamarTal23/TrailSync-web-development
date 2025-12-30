@@ -27,9 +27,7 @@ class CommentController extends BaseController {
     const comment = await Comment.findById(req.params.id);
 
     if (comment?.user.toString() !== userId) {
-      res.status(StatusCodes.FORBIDDEN).json({ error: FORBIDDEN_MESSAGE });
-
-      return;
+      return res.status(StatusCodes.FORBIDDEN).json({ error: FORBIDDEN_MESSAGE });
     }
 
     return super.put(req, res);
@@ -40,9 +38,7 @@ class CommentController extends BaseController {
     const comment = await Comment.findById(req.params.id);
 
     if (comment?.user.toString() !== userId) {
-      res.status(StatusCodes.FORBIDDEN).json({ error: FORBIDDEN_MESSAGE });
-
-      return;
+      return res.status(StatusCodes.FORBIDDEN).json({ error: FORBIDDEN_MESSAGE });
     }
 
     return super.delete(req, res);

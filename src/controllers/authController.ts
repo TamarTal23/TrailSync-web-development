@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
 import { deleteFile, normalizeFilePath } from '../utilities/photoUpload';
+import { handleCreateRes } from '../utilities/general';
 
 const sendError = (res: Response, message: string, code?: number) => {
   const errCode = code || StatusCodes.BAD_REQUEST;
@@ -46,13 +47,13 @@ const register = async (req: Request, res: Response) => {
     }
 
     const createdUser = await User.create(userData);
-    const user = Array.isArray(createdUser) ? createdUser[0] : createdUser;
-    const tokens = generateToken(user._id.toString());
+    const user = handleCreateRes(createdUser);
+    const newToken = generateToken(user._id.toString());
 
-    user.refreshTokens.push(tokens.refreshToken);
+    user.refreshTokens.push(newToken.refreshToken);
     await user.save();
 
-    res.status(StatusCodes.CREATED).json(tokens);
+    res.status(StatusCodes.CREATED).json(newToken);
   } catch (error) {
     console.error('Registration error:', error);
 
@@ -113,6 +114,7 @@ const logout = async (req: Request, res: Response) => {
     user.refreshTokens = user.refreshTokens.filter(
       (currRefreshToken) => currRefreshToken !== refreshToken
     );
+
     await user.save();
 
     res.status(StatusCodes.OK).json({ message: 'Logged out successfully' });
@@ -123,7 +125,7 @@ const logout = async (req: Request, res: Response) => {
   }
 };
 
-const refreshToken = async (req: Request, res: Response) => {
+const refreshTokens = async (req: Request, res: Response) => {
   const { refreshToken } = req.body;
 
   if (!refreshToken) {
@@ -131,8 +133,8 @@ const refreshToken = async (req: Request, res: Response) => {
   }
 
   try {
-    const decoded: any = jwt.verify(refreshToken, process.env.JWT_SECRET!);
-    const user = await User.findById(decoded.userId);
+    const decodedUser: any = jwt.verify(refreshToken, process.env.JWT_SECRET!);
+    const user = await User.findById(decodedUser.userId);
 
     if (!user) {
       return sendError(res, 'Invalid refresh token', StatusCodes.UNAUTHORIZED);
@@ -145,15 +147,15 @@ const refreshToken = async (req: Request, res: Response) => {
       return sendError(res, 'Invalid refresh token', StatusCodes.UNAUTHORIZED);
     }
 
-    const tokens = generateToken(user._id.toString());
-    user.refreshTokens.push(tokens.refreshToken);
+    const newToken = generateToken(user._id.toString());
+    user.refreshTokens.push(newToken.refreshToken);
 
     user.refreshTokens = user.refreshTokens.filter(
       (currRefreshToken) => currRefreshToken !== refreshToken
     );
     await user.save();
 
-    res.status(StatusCodes.OK).json(tokens);
+    res.status(StatusCodes.OK).json(newToken);
   } catch (error) {
     console.error('Refresh token error:', error);
 
@@ -165,5 +167,5 @@ export default {
   register,
   login,
   logout,
-  refreshToken,
+  refreshTokens,
 };

@@ -27,24 +27,19 @@ app.use('/auth', authRoutes);
 app.use('/comment', commentRoutes);
 app.use('/user', userRoutes);
 
-export const initApp = () => {
-  const dbConnectionPromise = new Promise<Express>((resolve, _reject) => {
-    mongoose
-      .connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/TrailSync', {})
-      .then(() => {
-        resolve(app);
-      });
+export const initApp = async () => {
+  const db = mongoose.connection;
+  db.on('error', (error) => console.error(error));
 
-    const db = mongoose.connection;
-    db.on('error', (error) => console.error(error));
-    db.once('open', () => console.log('Connected to Database'));
-  });
+  await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/TrailSync', {});
+  console.log('Connected to Database');
 
-  return dbConnectionPromise;
+  return app;
 };
 
-initApp().then((app) =>
+(async () => {
+  const app = await initApp();
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-  })
-);
+  });
+})();

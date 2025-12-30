@@ -6,6 +6,8 @@ import { AuthRequest } from '../middlewares/authMiddleware';
 
 const defaultMaxFileSize = 5 * 1024 * 1024; // 5 MB
 
+export const NEW_IMAGE_PLACEHOLDER = 'new';
+
 const uploadDirs = ['uploads/profiles', 'uploads/posts'];
 
 uploadDirs.forEach((dir) => {
@@ -28,13 +30,13 @@ const postStorage = multer.diskStorage({
     callback(null, 'uploads/posts/');
   },
   filename: (req: Request, file, callback) => {
-    // For new posts, we'll use 'new' as placeholder and rename after post creation
-    const postId = req.params.id || 'new';
+    // For new posts use 'new' as placeholder and rename after post creation
+    const postId = req.params.id || NEW_IMAGE_PLACEHOLDER;
     callback(null, `${postId}-${file.originalname}`);
   },
 });
 
-const imageFilter = (
+const validateImageType = (
   _req: Request,
   file: Express.Multer.File,
   callback: multer.FileFilterCallback
@@ -50,17 +52,16 @@ const imageFilter = (
   }
 };
 
-export const uploadProfile = multer({
-  storage: profileStorage,
-  fileFilter: imageFilter,
-  limits: { fileSize: parseInt(process.env.MAX_FILE_SIZE || defaultMaxFileSize.toString()) },
-});
+const createMulterUpload = (storage: multer.StorageEngine) =>
+  multer({
+    storage,
+    fileFilter: validateImageType,
+    limits: { fileSize: parseInt(process.env.MAX_FILE_SIZE || defaultMaxFileSize.toString()) },
+  });
 
-export const uploadPostPhotos = multer({
-  storage: postStorage,
-  fileFilter: imageFilter,
-  limits: { fileSize: parseInt(process.env.MAX_FILE_SIZE || defaultMaxFileSize.toString()) },
-});
+export const uploadProfile = createMulterUpload(profileStorage);
+
+export const uploadPostPhotos = createMulterUpload(postStorage);
 
 export const deleteFile = (filePath: string): void => {
   if (fs.existsSync(filePath)) {
@@ -74,10 +75,14 @@ export const deleteFiles = (filePaths: string[]): void => {
 
 export const normalizeFilePath = (filePath: string) => filePath.replace(/\\/g, '/');
 
-export const renamePostFiles = (oldPaths: string[], postId: string): string[] => {
+export const renamePostFiles = (
+  oldPaths: string[],
+  createdId: string,
+  placeholder: string
+): string[] => {
   return oldPaths.map((oldPath) => {
     const filename = path.basename(oldPath);
-    const newFilename = filename.replace('new', postId);
+    const newFilename = filename.replace(placeholder, createdId);
     const newPath = path.join(path.dirname(oldPath), newFilename);
 
     if (fs.existsSync(oldPath)) {

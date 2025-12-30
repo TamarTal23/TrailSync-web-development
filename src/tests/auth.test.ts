@@ -13,7 +13,7 @@ beforeAll(async () => {
   await User.deleteMany();
 });
 
-describe('Test Auth Suite', () => {
+describe('Test Auth', () => {
   test('Test creating a post without token fails', async () => {
     const response = await request(app).post('/post').send(postsList[0]);
     expect(response.status).toBe(StatusCodes.UNAUTHORIZED);

@@ -7,7 +7,7 @@ router.post('/register', uploadProfile.single('profilePicture'), authController.
 
 router.post('/login', authController.login);
 
-router.post('/refresh-token', authController.refreshToken);
+router.post('/refresh-token', authController.refreshTokens);
 
 router.post('/logout', authController.logout);
 

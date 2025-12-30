@@ -5,7 +5,13 @@ import { AuthRequest } from '../middlewares/authMiddleware';
 import { StatusCodes } from 'http-status-codes';
 import { uniq } from 'lodash';
 import { Express } from 'express';
-import { deleteFiles, normalizeFilePath, renamePostFiles } from '../utilities/photoUpload';
+import {
+  deleteFiles,
+  NEW_IMAGE_PLACEHOLDER,
+  normalizeFilePath,
+  renamePostFiles,
+} from '../utilities/photoUpload';
+import { handleCreateRes } from '../utilities/general';
 
 class PostController extends BaseController {
   constructor() {
@@ -14,20 +20,26 @@ class PostController extends BaseController {
 
   createPost = async (req: AuthRequest, res: Response) => {
     const userId = req.userId;
-    req.body.sender = userId;
 
-    let uploadedFiles: string[] = [];
-
-    if (req.files && Array.isArray(req.files)) {
-      uploadedFiles = req.files.map((file: Express.Multer.File) => normalizeFilePath(file.path));
-    }
+    const uploadedFiles: string[] =
+      req.files && Array.isArray(req.files)
+        ? req.files.map((file: Express.Multer.File) => normalizeFilePath(file.path))
+        : [];
 
     try {
-      req.body.photos = uploadedFiles;
-      const posts = await Post.create(req.body);
-      const post = Array.isArray(posts) ? posts[0] : posts;
+      const posts = await Post.create({
+        ...req.body,
+        sender: userId,
+        photos: uploadedFiles,
+      });
 
-      const renamedPaths = renamePostFiles(uploadedFiles, post._id.toString());
+      const post = handleCreateRes(posts);
+
+      const renamedPaths = renamePostFiles(
+        uploadedFiles,
+        post._id.toString(),
+        NEW_IMAGE_PLACEHOLDER
+      );
 
       post.photos = renamedPaths;
       await post.save();
@@ -61,7 +73,6 @@ class PostController extends BaseController {
         return res.status(StatusCodes.FORBIDDEN).json({ error: 'Forbidden' });
       }
 
-      // Start with existing photos
       let currentPhotos = [...post.photos];
 
       if (req.body.photosToDelete) {
@@ -82,12 +93,15 @@ class PostController extends BaseController {
         const newPhotoPaths = req.files.map((file: Express.Multer.File) =>
           normalizeFilePath(file.path)
         );
+
         currentPhotos = uniq([...currentPhotos, ...newPhotoPaths]);
       }
 
-      req.body.photos = currentPhotos;
-
-      const updatedPost = await this.model.findByIdAndUpdate(postId, req.body, { new: true });
+      const updatedPost = await this.model.findByIdAndUpdate(
+        postId,
+        { ...req.body, photos: currentPhotos },
+        { new: true }
+      );
 
       res.json(updatedPost);
     } catch (error) {
