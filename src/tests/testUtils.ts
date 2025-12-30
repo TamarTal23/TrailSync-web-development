@@ -39,12 +39,6 @@ export type PostData = {
   photos: string[];
 };
 
-// export type CommentData = {
-//   post: string;
-//   user: string;
-//   text: string;
-// };
-
 export const postsList: PostData[] = [
   {
     title: 'Amazing Trip to Paris',
