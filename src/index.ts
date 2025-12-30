@@ -1,4 +1,4 @@
-import express, { Request, Response, Express } from 'express';
+import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import postRoutes from './routes/postRoutes';
@@ -8,7 +8,6 @@ import authRoutes from './routes/authRoutes';
 import mongoose from 'mongoose';
 
 dotenv.config();
-// connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;

@@ -1,6 +1,8 @@
 import { Express } from 'express';
 import request from 'supertest';
 import User from '../model/userModel';
+import mongoose from 'mongoose';
+import { CommentType } from '../model/commentModel';
 
 type UserData = {
   email: string;
@@ -22,7 +24,6 @@ export const registerTestUser = async (app: Express) => {
 
   const res = await request(app).post('/auth/register').send(userData);
 
-  userData._id = res.body._id;
   userData.token = res.body.token;
 };
 
@@ -105,3 +106,75 @@ export const postsList: PostData[] = [
     photos: ['bali-beach.jpg', 'bali-temple.jpg'],
   },
 ];
+
+export type CommentData = {
+  _id: mongoose.Types.ObjectId;
+  post: mongoose.Types.ObjectId;
+  text: string;
+  user?: string;
+};
+
+export const createCommentsData = (postIds: mongoose.Types.ObjectId[]): CommentData[] => [
+  {
+    _id: new mongoose.Types.ObjectId(),
+    post: postIds[0],
+    text: 'Paris looks absolutely stunning! Great trip idea.',
+  },
+  {
+    _id: new mongoose.Types.ObjectId(),
+    post: postIds[0],
+    text: 'The Eiffel Tower visit alone makes this worth it.',
+  },
+  {
+    _id: new mongoose.Types.ObjectId(),
+    post: postIds[0],
+    text: 'Love the mix of culture, food, and sightseeing.',
+  },
+
+  // Tokyo post
+  {
+    _id: new mongoose.Types.ObjectId(),
+    post: postIds[1],
+    text: 'Tokyo is an incredible city — amazing choice!',
+  },
+  {
+    _id: new mongoose.Types.ObjectId(),
+    post: postIds[1],
+    text: 'The food scene in Tokyo is unbeatable.',
+  },
+  {
+    _id: new mongoose.Types.ObjectId(),
+    post: postIds[1],
+    text: 'I like how you included both modern and traditional spots.',
+  },
+
+  // New York post
+  {
+    _id: new mongoose.Types.ObjectId(),
+    post: postIds[2],
+    text: 'Perfect weekend itinerary for NYC.',
+  },
+  {
+    _id: new mongoose.Types.ObjectId(),
+    post: postIds[2],
+    text: 'Broadway and Central Park never disappoint.',
+  },
+
+  // Optional: Kenya post
+  {
+    _id: new mongoose.Types.ObjectId(),
+    post: postIds[3],
+    text: 'A safari in Kenya sounds like a once-in-a-lifetime experience.',
+  },
+  {
+    _id: new mongoose.Types.ObjectId(),
+    post: postIds[3],
+    text: 'The wildlife photos must be incredible.',
+  },
+];
+
+export const normalizeComment = (comment: CommentType & { _id: string }) => ({
+  _id: comment._id,
+  post: comment.post,
+  text: comment.text,
+});

@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "dev": "nodemon ./src/index.ts",
     "test": "tsc && jest --runInBand --detectOpenHandles --forceExit",
-    "test-auth": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/auth.test.ts"
+    "test-auth": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/auth.test.ts",
+    "test-comments": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/comments.test.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
