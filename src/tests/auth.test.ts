@@ -2,7 +2,7 @@ import request from 'supertest';
 import { Express } from 'express';
 import User from '../model/userModel';
 import { initApp } from '..';
-import { expect, test, beforeAll, jest, describe } from '@jest/globals';
+import { expect, test, beforeAll, describe } from '@jest/globals';
 import { postsList, userData } from './testUtils';
 import { StatusCodes } from 'http-status-codes';
 
