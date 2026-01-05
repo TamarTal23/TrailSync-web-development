@@ -149,6 +149,15 @@ describe('Posts API Auth', () => {
     expect(response.body.price).toBe(updatedData.price);
   });
 
+  test('update post with fake token', async () => {
+    const response = await request(app)
+      .put('/post/' + postsList[0]._id)
+      .set('Authorization', `Bearer <fakeToken>`)
+      .send({ title: 'Hack Attempt' });
+
+    expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  });
+
   test('delete post by id', async () => {
     const testedPost = postsList[2];
 

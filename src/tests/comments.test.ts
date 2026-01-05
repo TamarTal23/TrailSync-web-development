@@ -113,7 +113,7 @@ describe('Comments API Auth', () => {
     });
   });
 
-  test('test put comment by id', async () => {
+  test('test update comment by id', async () => {
     const testedComment = commentsData[4];
 
     testedComment.text = 'new comment text';
@@ -123,6 +123,17 @@ describe('Comments API Auth', () => {
       .send(testedComment);
     expect(response.statusCode).toBe(StatusCodes.OK);
     expect(response.body.text).toBe(testedComment.text);
+  });
+
+  test('update comment with fake token', async () => {
+    const testedComment = commentsData[4];
+
+    const response = await request(app)
+      .put('/comment/' + testedComment._id)
+      .set('Authorization', `Bearer <fakeToken>`)
+      .send({ title: 'Hack Attempt' });
+
+    expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
   });
 
   test('test delete comment by id', async () => {
