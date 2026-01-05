@@ -36,7 +36,7 @@ afterAll((done) => {
   done();
 });
 
-describe('Comments API Auth', () => {
+describe('Comments API test', () => {
   test('post comment without auth', async () => {
     const response = await request(app).post('/comment').send(commentsData[0]);
     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -151,5 +151,27 @@ describe('Comments API Auth', () => {
 
     const getResponse = await request(app).get('/comment/' + testedComment._id);
     expect(getResponse.statusCode).toBe(StatusCodes.NOT_FOUND);
+  });
+
+  test('get non-existing comment', async () => {
+    const response = await request(app).get('/comment/' + new mongoose.Types.ObjectId());
+    expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+  });
+
+  test('update non-existing comment', async () => {
+    const response = await request(app)
+      .put('/comment/' + new mongoose.Types.ObjectId())
+      .set('Authorization', 'Bearer ' + userData.token)
+      .send({ text: 'texttt' });
+
+    expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+  });
+
+  test('delete non-existing post', async () => {
+    const response = await request(app)
+      .delete('/comment/' + new mongoose.Types.ObjectId())
+      .set('Authorization', 'Bearer ' + userData.token);
+
+    expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
   });
 });

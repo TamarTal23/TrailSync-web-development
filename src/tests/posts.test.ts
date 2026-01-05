@@ -21,7 +21,7 @@ afterAll(async () => {
   await mongoose.connection.close();
 });
 
-describe('Posts API Auth', () => {
+describe('Posts API tests', () => {
   test('post without auth', async () => {
     const response = await request(app).post('/post').send(postsList[0]);
     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -170,5 +170,27 @@ describe('Posts API Auth', () => {
 
     const getResponse = await request(app).get('/post/' + testedPost._id);
     expect(getResponse.statusCode).toBe(StatusCodes.NOT_FOUND);
+  });
+
+  test('get non-existing post', async () => {
+    const response = await request(app).get('/post/' + new mongoose.Types.ObjectId());
+    expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+  });
+
+  test('update non-existing post', async () => {
+    const response = await request(app)
+      .put('/post/' + new mongoose.Types.ObjectId())
+      .set('Authorization', `Bearer ${userData.token}`)
+      .send({ price: 5 });
+
+    expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+  });
+
+  test('delete non-existing post', async () => {
+    const response = await request(app)
+      .delete('/post/' + new mongoose.Types.ObjectId())
+      .set('Authorization', `Bearer ${userData.token}`);
+
+    expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
   });
 });
