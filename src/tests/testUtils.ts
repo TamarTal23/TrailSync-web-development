@@ -3,6 +3,7 @@ import request from 'supertest';
 import User from '../model/userModel';
 import mongoose from 'mongoose';
 import { CommentType } from '../model/commentModel';
+import { PostType } from '../model/postModel';
 
 type UserData = {
   email: string;
@@ -28,6 +29,7 @@ export const registerTestUser = async (app: Express) => {
 };
 
 export type PostData = {
+  _id: mongoose.Types.ObjectId;
   title: string;
   mapLink: string;
   price: number;
@@ -42,6 +44,7 @@ export type PostData = {
 
 export const postsList: PostData[] = [
   {
+    _id: new mongoose.Types.ObjectId(),
     title: 'Amazing Trip to Paris',
     mapLink: 'https://www.google.com/maps/place/Paris,+France',
     price: 2500,
@@ -55,6 +58,7 @@ export const postsList: PostData[] = [
     photos: ['paris-eiffel.jpg', 'paris-louvre.jpg'],
   },
   {
+    _id: new mongoose.Types.ObjectId(),
     title: 'Tokyo Adventure',
     mapLink: 'https://www.google.com/maps/place/Tokyo,+Japan',
     price: 3500,
@@ -68,6 +72,7 @@ export const postsList: PostData[] = [
     photos: ['tokyo-shibuya.jpg', 'tokyo-temple.jpg', 'tokyo-food.jpg'],
   },
   {
+    _id: new mongoose.Types.ObjectId(),
     title: 'New York City Weekend',
     mapLink: 'https://www.google.com/maps/place/New+York,+NY,+USA',
     price: 1800,
@@ -81,6 +86,7 @@ export const postsList: PostData[] = [
     photos: ['nyc-skyline.jpg'],
   },
   {
+    _id: new mongoose.Types.ObjectId(),
     title: 'Safari in Kenya',
     mapLink: 'https://www.google.com/maps/place/Kenya',
     price: 4500,
@@ -93,6 +99,7 @@ export const postsList: PostData[] = [
     photos: ['kenya-safari1.jpg', 'kenya-safari2.jpg', 'kenya-wildlife.jpg'],
   },
   {
+    _id: new mongoose.Types.ObjectId(),
     title: 'Beach Vacation in Bali',
     mapLink: 'https://www.google.com/maps/place/Bali,+Indonesia',
     price: 2000,
@@ -130,8 +137,6 @@ export const createCommentsData = (postIds: mongoose.Types.ObjectId[]): CommentD
     post: postIds[0],
     text: 'Love the mix of culture, food, and sightseeing.',
   },
-
-  // Tokyo post
   {
     _id: new mongoose.Types.ObjectId(),
     post: postIds[1],
@@ -147,8 +152,6 @@ export const createCommentsData = (postIds: mongoose.Types.ObjectId[]): CommentD
     post: postIds[1],
     text: 'I like how you included both modern and traditional spots.',
   },
-
-  // New York post
   {
     _id: new mongoose.Types.ObjectId(),
     post: postIds[2],
@@ -159,8 +162,6 @@ export const createCommentsData = (postIds: mongoose.Types.ObjectId[]): CommentD
     post: postIds[2],
     text: 'Broadway and Central Park never disappoint.',
   },
-
-  // Optional: Kenya post
   {
     _id: new mongoose.Types.ObjectId(),
     post: postIds[3],
@@ -172,6 +173,23 @@ export const createCommentsData = (postIds: mongoose.Types.ObjectId[]): CommentD
     text: 'The wildlife photos must be incredible.',
   },
 ];
+
+/*The normalization functions convert the Mongoose document to a plain object
+ and extract only relevant fields for comparison in tests.*/
+export const normalizePost = (post: PostType & { _id: string }) => ({
+  _id: post._id,
+  sender: post.sender._id,
+  title: post.title,
+  mapLink: post.mapLink,
+  price: post.price,
+  numberOfDays: post.numberOfDays,
+  location: {
+    city: post.location?.city,
+    country: post.location?.country,
+  },
+  description: post.description,
+  photos: post.photos,
+});
 
 export const normalizeComment = (comment: CommentType & { _id: string }) => ({
   _id: comment._id,

@@ -57,6 +57,7 @@ class BaseController {
 
     try {
       const response = await this.model.findByIdAndDelete(id);
+
       res.send(response);
     } catch (error) {
       res

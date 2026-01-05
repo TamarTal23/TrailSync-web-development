@@ -48,7 +48,7 @@ describe('Comments API Auth', () => {
     expect(response.body).toEqual([]);
   });
 
-  test('test post comment', async () => {
+  test('test post comments', async () => {
     for (const comment of commentsData) {
       const response = await request(app)
         .post('/comment')
