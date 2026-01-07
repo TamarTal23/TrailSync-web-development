@@ -14,7 +14,9 @@
     "test-auth": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/auth.test.ts",
     "test-comments": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/comments.test.ts",
     "pretest-posts": "tsc && node ./dist/src/tests/utilities/createFakeImages.js",
-    "test-posts": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/posts.test.ts"
+    "test-posts": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/posts.test.ts",
+    "pretest-users": "tsc && node ./dist/src/tests/utilities/createFakeImages.js",
+    "test-users": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/users.test.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

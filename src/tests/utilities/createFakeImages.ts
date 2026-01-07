@@ -1,8 +1,6 @@
-// ts file, commonjs
 import fs from 'fs';
 import path from 'path';
 
-// project root
 const rootDir = process.cwd();
 
 const files = [
@@ -17,9 +15,9 @@ const files = [
   'kenya-wildlife.jpg',
   'bali-beach.jpg',
   'bali-temple.jpg',
+  'profile.jpg',
 ];
 
-// Assets directory in project root
 const dir = path.join(rootDir, 'src', 'tests', 'assets');
 
 if (!fs.existsSync(dir)) {

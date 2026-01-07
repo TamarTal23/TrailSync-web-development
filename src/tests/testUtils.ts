@@ -1,6 +1,6 @@
 import { Express } from 'express';
 import request from 'supertest';
-import User from '../model/userModel';
+import User, { UserType } from '../model/userModel';
 import mongoose from 'mongoose';
 import { CommentType } from '../model/commentModel';
 import { PostType } from '../model/postModel';
@@ -195,4 +195,11 @@ export const normalizeComment = (comment: CommentType & { _id: string }) => ({
   _id: comment._id,
   post: comment.post,
   text: comment.text,
+});
+
+export const normalizeUser = (user: UserType & { _id: string }) => ({
+  _id: user._id,
+  email: user.email,
+  username: user.username,
+  profilePicture: user.profilePicture || null,
 });
