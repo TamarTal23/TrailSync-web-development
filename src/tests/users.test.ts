@@ -32,7 +32,6 @@ describe('Users API tests', () => {
   test('get all users', async () => {
     const response = await request(app).get('/user');
     expect(response.statusCode).toBe(StatusCodes.OK);
-    console.log({ booty: response.body });
 
     userData._id = response.body[0]._id;
 
