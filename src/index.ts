@@ -1,4 +1,4 @@
-import express, { Request, Response, Express } from 'express';
+import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import postRoutes from './routes/postRoutes';
@@ -6,15 +6,17 @@ import userRoutes from './routes/userRoutes';
 import commentRoutes from './routes/commentRoutes';
 import authRoutes from './routes/authRoutes';
 import mongoose from 'mongoose';
+import { setupSwagger } from './swagger';
 
 dotenv.config();
-// connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+
+setupSwagger(app);
 
 app.use('/uploads', express.static('uploads'));
 
@@ -32,7 +34,6 @@ export const initApp = async () => {
   db.on('error', (error) => console.error(error));
 
   await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/TrailSync', {});
-  console.log('Connected to Database');
 
   return app;
 };
