@@ -32,8 +32,8 @@ beforeAll(async () => {
   commentsData = createCommentsData(postIds);
 });
 
-afterAll((done) => {
-  done();
+afterAll(async () => {
+  await mongoose.connection.close();
 });
 
 describe('Comments API test', () => {
@@ -64,7 +64,7 @@ describe('Comments API test', () => {
     }
   });
 
-  test('test get comments after post', async () => {
+  test('test get all comments after post', async () => {
     const response = await request(app).get('/comment');
     expect(response.statusCode).toBe(StatusCodes.OK);
     expect(response.body.length).toBe(commentsData.length);

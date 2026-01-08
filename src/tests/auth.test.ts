@@ -65,7 +65,7 @@ describe('Test Auth', () => {
   test('Test using token after expiration fails', async () => {
     await new Promise((resolve) => setTimeout(resolve, 5000));
     const postData = postsList[0];
-    // eslint-disable-next-line no-unused-vars
+
     const { _id, ...postDataWithoutId } = postData;
     const response = await request(app)
       .post('/post')

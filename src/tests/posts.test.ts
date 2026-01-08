@@ -61,7 +61,8 @@ describe('Posts API tests', () => {
 
       expect(response.statusCode).toBe(StatusCodes.CREATED);
 
-      post._id = response.body._id; // Save the generated ID back to the postsList
+      // Save the generated ID back to the postsList
+      post._id = response.body._id;
       post.photos = post.photos.map((photo) => `uploads/posts/${response.body._id}-${photo}`);
 
       const normalized = normalizePost(response.body);
