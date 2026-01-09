@@ -1,11 +1,17 @@
 import request from 'supertest';
 import { Express } from 'express';
-import { afterAll, beforeAll, describe, expect, test } from '@jest/globals';
+import { afterAll, beforeAll, describe, expect, jest, test } from '@jest/globals';
 import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
 import User from '../model/userModel';
 import { initApp } from '..';
-import { registerTestUser, userData, normalizeUser } from './testUtils';
+import {
+  registerTestUser,
+  userData,
+  normalizeUser,
+  registerOtherTestUser,
+  secondUser,
+} from './testUtils';
 import path from 'node:path';
 
 let app: Express;
@@ -29,6 +35,15 @@ describe('Users API tests', () => {
     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
   });
 
+  test('update user with duplicate email', async () => {
+    const response = await request(app)
+      .put('/user/' + userData._id)
+      .set('Authorization', `Bearer ${userData.token}`)
+      .send({ email: userData.email }); // same email → duplicate key
+
+    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+  });
+
   test('get all users', async () => {
     const response = await request(app).get('/user');
     expect(response.statusCode).toBe(StatusCodes.OK);
@@ -45,98 +60,165 @@ describe('Users API tests', () => {
 
     expect(normalizedResponse).toContainEqual(expect.objectContaining(testUserNormalized));
   });
-});
 
-test('get user with filter', async () => {
-  const response = await request(app).get('/user').query({ username: userData.username });
+  test('get users with db error', async () => {
+    jest.spyOn(User, 'find').mockImplementationOnce(() => {
+      throw new Error('DB failure');
+    });
 
-  expect(response.statusCode).toBe(StatusCodes.OK);
+    const response = await request(app).get('/user');
+    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+  });
 
-  const normalizedUsers = response.body.map(normalizeUser);
+  test('get user with filter', async () => {
+    const response = await request(app).get('/user').query({ username: userData.username });
 
-  expect(normalizedUsers).toContainEqual(
-    expect.objectContaining({
+    expect(response.statusCode).toBe(StatusCodes.OK);
+
+    const normalizedUsers = response.body.map(normalizeUser);
+
+    expect(normalizedUsers).toContainEqual(
+      expect.objectContaining({
+        _id: userData._id?.toString(),
+        email: userData.email,
+        username: userData.username,
+        profilePicture: null,
+      })
+    );
+  });
+
+  test('get user by id', async () => {
+    const response = await request(app).get('/user/' + userData._id);
+    expect(response.statusCode).toBe(StatusCodes.OK);
+
+    const user = normalizeUser(response.body);
+
+    expect(user).toMatchObject({
       _id: userData._id?.toString(),
       email: userData.email,
       username: userData.username,
       profilePicture: null,
-    })
-  );
-});
-
-test('get user by id', async () => {
-  const response = await request(app).get('/user/' + userData._id);
-  expect(response.statusCode).toBe(StatusCodes.OK);
-
-  const user = normalizeUser(response.body);
-
-  expect(user).toMatchObject({
-    _id: userData._id?.toString(),
-    email: userData.email,
-    username: userData.username,
-    profilePicture: null,
+    });
   });
-});
 
-test('update user by id', async () => {
-  const newUsername = 'UpdatedUser';
-  const response = await request(app)
-    .put('/user/' + userData._id)
-    .set('Authorization', `Bearer ${userData.token}`)
-    .send({ username: newUsername });
+  test('getUserById with db error', async () => {
+    jest.spyOn(User, 'findById').mockImplementationOnce(() => {
+      throw new Error('DB failure');
+    });
 
-  expect(response.statusCode).toBe(StatusCodes.OK);
-  expect(response.body.username).toBe(newUsername);
-});
+    const response = await request(app).get('/user/' + userData._id);
+    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+  });
 
-test('update user with fake token', async () => {
-  const response = await request(app)
-    .put('/user/' + userData._id)
-    .set('Authorization', `Bearer <fakeToken>`)
-    .send({ username: 'Hacker' });
-  expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
-});
+  test('get user with non-existent id', async () => {
+    const response = await request(app).get('/user/' + new mongoose.Types.ObjectId());
+    expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+  });
 
-test('update user profile picture', async () => {
-  const filePath = path.join(__dirname, 'assets', 'profile.jpg');
-  const response = await request(app)
-    .put('/user/' + userData._id)
-    .set('Authorization', `Bearer ${userData.token}`)
-    .attach('profilePicture', filePath);
+  test('update user by id', async () => {
+    const newUsername = 'UpdatedUser';
+    const response = await request(app)
+      .put('/user/' + userData._id)
+      .set('Authorization', `Bearer ${userData.token}`)
+      .send({ username: newUsername });
 
-  expect(response.statusCode).toBe(StatusCodes.OK);
-  expect(response.body.profilePicture).toContain('uploads/profiles/');
-});
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(response.body.username).toBe(newUsername);
+  });
 
-test('delete user by id', async () => {
-  const response = await request(app)
-    .delete('/user/' + userData._id)
-    .set('Authorization', `Bearer ${userData.token}`);
+  test('update user with non existent id', async () => {
+    const response = await request(app)
+      .put('/user/' + new mongoose.Types.ObjectId())
+      .set('Authorization', `Bearer ${userData.token}`)
+      .send({ username: 'NoUser' });
 
-  expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+  });
 
-  const getResponse = await request(app).get('/user/' + userData._id);
-  expect(getResponse.statusCode).toBe(StatusCodes.NOT_FOUND);
-});
+  test('update user with fake token', async () => {
+    const response = await request(app)
+      .put('/user/' + userData._id)
+      .set('Authorization', `Bearer <fakeToken>`)
+      .send({ username: 'Hacker' });
+    expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  });
 
-test('get non-existing user', async () => {
-  const response = await request(app).get('/user/' + new mongoose.Types.ObjectId());
-  expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
-});
+  test('update user profile picture', async () => {
+    const filePath = path.join(__dirname, 'assets', 'profile.jpg');
+    const response = await request(app)
+      .put('/user/' + userData._id)
+      .set('Authorization', `Bearer ${userData.token}`)
+      .attach('profilePicture', filePath);
 
-test('update non-existing user', async () => {
-  const response = await request(app)
-    .put('/user/' + new mongoose.Types.ObjectId())
-    .set('Authorization', `Bearer ${userData.token}`)
-    .send({ username: 'NoUser' });
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(response.body.profilePicture).toContain('uploads/profiles/');
+  });
 
-  expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
-});
+  test('update user with db error', async () => {
+    jest.spyOn(User, 'findByIdAndUpdate').mockImplementationOnce(() => {
+      throw new Error('DB failure');
+    });
 
-test('delete non-existing user', async () => {
-  const response = await request(app)
-    .delete('/user/' + new mongoose.Types.ObjectId())
-    .set('Authorization', `Bearer ${userData.token}`);
+    const response = await request(app)
+      .put('/user/' + userData._id)
+      .set('Authorization', `Bearer ${userData.token}`)
+      .send({ username: 'ShouldFail' });
 
-  expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+  });
+
+  test('update user by another user should not work', async () => {
+    await registerOtherTestUser(app);
+
+    const response = await request(app)
+      .put('/user/' + userData._id)
+      .set('Authorization', `Bearer ${secondUser.token}`)
+      .send({ username: 'Hacker' });
+
+    expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
+  });
+
+  test('update user with duplicate email', async () => {
+    await registerOtherTestUser(app);
+
+    const response = await request(app)
+      .put('/user/' + userData._id)
+      .set('Authorization', `Bearer ${userData.token}`)
+      .send({ email: secondUser.email });
+
+    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+  });
+
+  test('delete user by id', async () => {
+    const response = await request(app)
+      .delete('/user/' + userData._id)
+      .set('Authorization', `Bearer ${userData.token}`);
+
+    expect(response.statusCode).toBe(StatusCodes.OK);
+
+    const getResponse = await request(app).get('/user/' + userData._id);
+    expect(getResponse.statusCode).toBe(StatusCodes.NOT_FOUND);
+  });
+
+  test('delete user with non-existent id', async () => {
+    const response = await request(app)
+      .delete('/user/' + new mongoose.Types.ObjectId())
+      .set('Authorization', `Bearer ${userData.token}`);
+
+    expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+  });
+
+  test('delete user by another user should not work', async () => {
+    const response = await request(app)
+      .delete('/user/' + userData._id)
+      .set('Authorization', `Bearer ${secondUser.token}`);
+
+    expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  });
+
+  test('delete user without auth', async () => {
+    const response = await request(app).delete('/user/' + userData._id);
+
+    expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  });
 });
