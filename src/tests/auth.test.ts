@@ -65,6 +65,8 @@ describe('Test Auth', () => {
   test('Test using token after expiration fails', async () => {
     await new Promise((resolve) => setTimeout(resolve, 5000));
     const postData = postsList[0];
+
+    const { _id, ...postDataWithoutId } = postData;
     const response = await request(app)
       .post('/post')
       .set('Authorization', 'Bearer ' + userData.token)
@@ -75,7 +77,7 @@ describe('Test Auth', () => {
     const refreshResponse = await request(app)
       .post('/auth/refresh-token')
       .send({ refreshToken: userData.refreshTokens });
-    console.log('Refresh response body:', refreshResponse.body);
+
     expect(refreshResponse.status).toBe(StatusCodes.OK);
     expect(refreshResponse.body).toHaveProperty('token');
     userData.token = refreshResponse.body.token;
@@ -85,7 +87,8 @@ describe('Test Auth', () => {
     const retryResponse = await request(app)
       .post('/post')
       .set('Authorization', 'Bearer ' + userData.token)
-      .send(postData);
+      .send(postDataWithoutId);
+
     expect(retryResponse.status).toBe(StatusCodes.CREATED);
   });
 

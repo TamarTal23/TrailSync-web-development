@@ -133,9 +133,7 @@ class PostController extends BaseController {
 
       deleteFiles(post.photos);
 
-      await this.model.findByIdAndDelete(postId);
-
-      res.json({ message: 'Post deleted successfully' });
+      return super.delete(req, res);
     } catch (error) {
       res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)

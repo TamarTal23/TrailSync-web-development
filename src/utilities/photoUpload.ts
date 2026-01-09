@@ -32,6 +32,7 @@ const postStorage = multer.diskStorage({
   filename: (req: Request, file, callback) => {
     // For new posts use 'new' as placeholder and rename after post creation
     const postId = req.params.id || NEW_IMAGE_PLACEHOLDER;
+
     callback(null, `${postId}-${file.originalname}`);
   },
 });

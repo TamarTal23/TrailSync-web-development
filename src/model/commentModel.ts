@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { InferSchemaType } from 'mongoose';
 
 const commentSchema = new mongoose.Schema(
   {
@@ -23,3 +23,4 @@ const commentSchema = new mongoose.Schema(
 );
 
 export default mongoose.model('Comment', commentSchema);
+export type CommentType = InferSchemaType<typeof commentSchema>;

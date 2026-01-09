@@ -26,6 +26,10 @@ class CommentController extends BaseController {
     const userId = req.userId;
     const comment = await Comment.findById(req.params.id);
 
+    if (!comment) {
+      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Comment not found' });
+    }
+
     if (comment?.user.toString() !== userId) {
       return res.status(StatusCodes.FORBIDDEN).json({ error: FORBIDDEN_MESSAGE });
     }
@@ -36,6 +40,10 @@ class CommentController extends BaseController {
   deleteComment = async (req: AuthRequest, res: Response) => {
     const userId = req.userId;
     const comment = await Comment.findById(req.params.id);
+
+    if (!comment) {
+      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Comment not found' });
+    }
 
     if (comment?.user.toString() !== userId) {
       return res.status(StatusCodes.FORBIDDEN).json({ error: FORBIDDEN_MESSAGE });

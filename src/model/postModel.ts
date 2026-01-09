@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { InferSchemaType } from 'mongoose';
 
 const postSchema = new mongoose.Schema(
   {
@@ -48,3 +48,4 @@ const postSchema = new mongoose.Schema(
 );
 
 export default mongoose.model('Post', postSchema);
+export type PostType = InferSchemaType<typeof postSchema>;
