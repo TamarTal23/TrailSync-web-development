@@ -219,7 +219,7 @@ router.put(
  *         description: Forbidden
  *       404:
  *         description: Post not found
- * *     500:
+ *     500:
  *         description: Server error
  */
 router.delete('/:id', authenticate, postController.deletePost.bind(postController));

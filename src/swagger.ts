@@ -198,20 +198,19 @@ const options: swaggerJsdoc.Options = {
       },
     },
   },
-  apis: ['./routes/*.ts'],
+  apis: ['./src/routes/*.ts'],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
 
 export const setupSwagger = (app: Express): void => {
-  app.use('/api-docs', swaggerUi.serve);
-  app.get(
+  app.use(
     '/api-docs',
+    swaggerUi.serve,
     swaggerUi.setup(swaggerSpec, {
       customSiteTitle: 'TrailSync',
     })
   );
-
   console.log(
     `Swagger documentation available at http://localhost:${process.env.PORT || 5000}/api-docs`
   );
