@@ -6,6 +6,7 @@ import userRoutes from './routes/userRoutes';
 import commentRoutes from './routes/commentRoutes';
 import authRoutes from './routes/authRoutes';
 import mongoose from 'mongoose';
+import { setupSwagger } from './swagger';
 
 dotenv.config();
 
@@ -16,6 +17,8 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/uploads', express.static('uploads'));
+
+setupSwagger(app);
 
 app.get('/', (_req: Request, res: Response) => {
   res.send('Server running');
