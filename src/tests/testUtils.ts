@@ -20,13 +20,25 @@ export const userData: UserData = {
   password: 'testPassword',
 };
 
-export const registerTestUser = async (app: Express) => {
-  await User.deleteMany({ email: userData.email });
+export const registerUser = async (app: Express, user: UserData, cleanup = false) => {
+  if (cleanup) {
+    await User.deleteMany({ email: user.email });
+  }
 
-  const res = await request(app).post('/auth/register').send(userData);
+  const res = await request(app).post('/auth/register').send(user);
+  user.token = res.body.token;
 
-  userData.token = res.body.token;
+  return res;
 };
+
+export const secondUser: UserData = {
+  email: 'seconduser@test.com',
+  password: '123456',
+  username: 'SecondUser',
+};
+
+export const registerTestUser = (app: Express) => registerUser(app, userData, true);
+export const registerOtherTestUser = (app: Express) => registerUser(app, secondUser);
 
 export type PostData = {
   _id: mongoose.Types.ObjectId;

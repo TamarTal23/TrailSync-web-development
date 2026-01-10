@@ -8,8 +8,10 @@ import {
   createCommentsData,
   CommentData,
   normalizeComment,
+  registerOtherTestUser,
+  secondUser,
 } from './testUtils';
-import { afterAll, beforeAll, describe, expect, test } from '@jest/globals';
+import { afterAll, beforeAll, describe, expect, jest, test } from '@jest/globals';
 import { initApp } from '..';
 import mongoose from 'mongoose';
 import { StatusCodes } from 'http-status-codes';
@@ -22,6 +24,7 @@ beforeAll(async () => {
   app = await initApp();
   await Comments.deleteMany({});
   await registerTestUser(app);
+
   const createdPosts = await Promise.all(
     postsList.map((post) =>
       request(app).post('/post').set('Authorization', `Bearer ${userData.token}`).send(post)
@@ -46,6 +49,15 @@ describe('Comments API test', () => {
     const response = await request(app).get('/comment');
     expect(response.statusCode).toBe(StatusCodes.OK);
     expect(response.body).toEqual([]);
+  });
+
+  test('create comment with missing required fields', async () => {
+    const response = await request(app)
+      .post('/comment')
+      .set('Authorization', `Bearer ${userData.token}`)
+      .send({}); // empty payload
+
+    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR); // or BAD_REQUEST if your controller validates
   });
 
   test('test post comments', async () => {
@@ -113,7 +125,30 @@ describe('Comments API test', () => {
     });
   });
 
-  test('test update comment by id', async () => {
+  test('get comment with fake id', async () => {
+    const response = await request(app).get('/comment/' + new mongoose.Types.ObjectId());
+    expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+  });
+
+  test('getCommentById with db error', async () => {
+    jest.spyOn(Comments, 'findById').mockImplementationOnce(() => {
+      throw new Error('DB failure');
+    });
+
+    const response = await request(app).get('/comment/' + commentsData[0]._id);
+    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+  });
+
+  test('get comments with db error', async () => {
+    jest.spyOn(Comments, 'find').mockImplementationOnce(() => {
+      throw new Error('DB failure');
+    });
+
+    const response = await request(app).get('/comment');
+    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+  });
+
+  test('update comment by id', async () => {
     const testedComment = commentsData[4];
 
     testedComment.text = 'new comment text';
@@ -131,9 +166,33 @@ describe('Comments API test', () => {
     const response = await request(app)
       .put('/comment/' + testedComment._id)
       .set('Authorization', `Bearer <fakeToken>`)
-      .send({ title: 'Hack Attempt' });
+      .send({ text: 'Hack Attempt' });
 
     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  });
+
+  test('update comment with non-existing id', async () => {
+    const nonExistingId = new mongoose.Types.ObjectId();
+
+    const response = await request(app)
+      .put('/comment/' + nonExistingId)
+      .set('Authorization', 'Bearer ' + userData.token)
+      .send({ text: 'Non-existing comment' });
+
+    expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+  });
+
+  test('update comment by non-owner should not work', async () => {
+    await registerOtherTestUser(app);
+
+    const testedComment = commentsData[0];
+
+    const res = await request(app)
+      .put('/comment/' + testedComment._id)
+      .set('Authorization', 'Bearer ' + secondUser.token)
+      .send({ text: 'hacked' });
+
+    expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
   });
 
   test('test delete comment by id', async () => {
@@ -153,25 +212,31 @@ describe('Comments API test', () => {
     expect(getResponse.statusCode).toBe(StatusCodes.NOT_FOUND);
   });
 
-  test('get non-existing comment', async () => {
-    const response = await request(app).get('/comment/' + new mongoose.Types.ObjectId());
-    expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
-  });
+  test('delete comment with non-existing id', async () => {
+    const nonExistingId = new mongoose.Types.ObjectId();
 
-  test('update non-existing comment', async () => {
     const response = await request(app)
-      .put('/comment/' + new mongoose.Types.ObjectId())
-      .set('Authorization', 'Bearer ' + userData.token)
-      .send({ text: 'texttt' });
-
-    expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
-  });
-
-  test('delete non-existing post', async () => {
-    const response = await request(app)
-      .delete('/comment/' + new mongoose.Types.ObjectId())
+      .delete('/comment/' + nonExistingId)
       .set('Authorization', 'Bearer ' + userData.token);
 
     expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+  });
+
+  test('delete comment with db error', async () => {
+    jest.spyOn(Comments, 'findByIdAndDelete').mockImplementationOnce(() => {
+      throw new Error('DB failure');
+    });
+
+    const response = await request(app)
+      .delete('/comment/' + commentsData[0]._id)
+      .set('Authorization', 'Bearer ' + userData.token);
+
+    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+  });
+
+  test('delete comment without auth', async () => {
+    const res = await request(app).delete('/comment/' + commentsData[0]._id);
+
+    expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
   });
 });
