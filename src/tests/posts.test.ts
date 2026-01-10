@@ -18,6 +18,8 @@ import path from 'node:path';
 
 let app: Express;
 
+const POST_URL = '/post';
+
 beforeAll(async () => {
   app = await initApp();
   await Post.deleteMany({});
@@ -30,19 +32,19 @@ afterAll(async () => {
 
 describe('Posts API tests', () => {
   test('post without auth', async () => {
-    const response = await request(app).post('/post').send(postsList[0]);
+    const response = await request(app).post(POST_URL).send(postsList[0]);
     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
   });
 
   test('get all posts empty db', async () => {
-    const response = await request(app).get('/post');
+    const response = await request(app).get(POST_URL);
     expect(response.statusCode).toBe(StatusCodes.OK);
     expect(response.body).toEqual([]);
   });
 
   test('create post with missing required fields', async () => {
     const response = await request(app)
-      .post('/post')
+      .post(POST_URL)
       .set('Authorization', `Bearer ${userData.token}`)
       .send({});
 
@@ -54,7 +56,7 @@ describe('Posts API tests', () => {
       const { photos, ...postData } = post;
 
       const responsePromise = request(app)
-        .post('/post')
+        .post(POST_URL)
         .set('Authorization', 'Bearer ' + userData.token)
         .field('title', postData.title)
         .field('mapLink', postData.mapLink)
@@ -95,7 +97,7 @@ describe('Posts API tests', () => {
   });
 
   test('get all posts after create', async () => {
-    const response = await request(app).get('/post');
+    const response = await request(app).get(POST_URL);
 
     expect(response.statusCode).toBe(StatusCodes.OK);
     expect(response.body.length).toBe(postsList.length);
@@ -118,19 +120,19 @@ describe('Posts API tests', () => {
     });
   });
 
-  test('get posts with db error', async () => {
+  test('test get posts with db error', async () => {
     jest.spyOn(Post, 'find').mockImplementationOnce(() => {
       throw new Error('DB failure');
     });
 
-    const response = await request(app).get('/post');
+    const response = await request(app).get(POST_URL);
     expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
   });
 
   test('get posts with filter', async () => {
     const post = postsList[0];
     const response = await request(app)
-      .get('/post')
+      .get(POST_URL)
       .query({ 'location.country': post.location.country });
     expect(response.statusCode).toBe(200);
     expect(response.body.length).toBe(1);
@@ -141,7 +143,7 @@ describe('Posts API tests', () => {
   test('get post by id with existing id', async () => {
     const testedPost = postsList[0];
 
-    const response = await request(app).get('/post/' + testedPost._id);
+    const response = await request(app).get(`${POST_URL}/${testedPost._id}`);
     expect(response.statusCode).toBe(StatusCodes.OK);
 
     expect(response.body._id).toBe(testedPost._id.toString());
@@ -156,18 +158,18 @@ describe('Posts API tests', () => {
     });
   });
 
-  test('getPostById with fake id', async () => {
+  test('test getPostById with fake id', async () => {
     const fakeId = new mongoose.Types.ObjectId();
-    const response = await request(app).get('/post/' + fakeId);
+    const response = await request(app).get(`${POST_URL}/${fakeId}`);
     expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
   });
 
-  test('getPostById with db error', async () => {
+  test('test getPostById with db error', async () => {
     jest.spyOn(Post, 'findById').mockImplementationOnce(() => {
       throw new Error('DB failure');
     });
 
-    const response = await request(app).get('/post/' + postsList[0]._id);
+    const response = await request(app).get(`${POST_URL}/${postsList[0]._id}`);
     expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
   });
 
@@ -181,7 +183,7 @@ describe('Posts API tests', () => {
     };
 
     const response = await request(app)
-      .put('/post/' + testedPost._id)
+      .put(`${POST_URL}/${testedPost._id}`)
       .set('Authorization', `Bearer ${userData.token}`)
       .send(updatedData);
 
@@ -194,7 +196,7 @@ describe('Posts API tests', () => {
     const testedPost = postsList[0];
 
     const response = await request(app)
-      .put('/post/' + testedPost._id)
+      .put(`${POST_URL}/${testedPost._id}`)
       .set('Authorization', `Bearer ${userData.token}`)
       .send({ price: 'invalid-price' });
 
@@ -203,7 +205,7 @@ describe('Posts API tests', () => {
 
   test('update post with fake token', async () => {
     const response = await request(app)
-      .put('/post/' + postsList[0]._id)
+      .put(`${POST_URL}/${postsList[0]._id}`)
       .set('Authorization', `Bearer <fakeToken>`)
       .send({ title: 'Hack Attempt' });
 
@@ -211,7 +213,8 @@ describe('Posts API tests', () => {
   });
 
   test('update post with non-existing id', async () => {
-    const nonExistingId = new mongoose.Types.ObjectId(); // generates a valid but non-existing ObjectId
+    // generates a valid but non-existing ObjectId
+    const nonExistingId = new mongoose.Types.ObjectId();
 
     const updatedData = {
       title: 'Non-existing Post Update',
@@ -219,18 +222,18 @@ describe('Posts API tests', () => {
     };
 
     const response = await request(app)
-      .put('/post/' + nonExistingId)
+      .put(`${POST_URL}/${nonExistingId}`)
       .set('Authorization', `Bearer ${userData.token}`)
       .send(updatedData);
 
     expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
   });
 
-  test('update post by non-owner should not work', async () => {
+  test('update post by non-owner', async () => {
     await registerOtherTestUser(app);
 
     const response = await request(app)
-      .put('/post/' + postsList[0]._id)
+      .put(`${POST_URL}/${postsList[0]._id}`)
       .set('Authorization', `Bearer ${secondUser.token}`)
       .send({ title: 'Hack Attempt' });
 
@@ -239,7 +242,7 @@ describe('Posts API tests', () => {
 
   test('update post with invalid photosToDelete JSON', async () => {
     const response = await request(app)
-      .put('/post/' + postsList[0]._id)
+      .put(`${POST_URL}/${postsList[0]._id}`)
       .set('Authorization', `Bearer ${userData.token}`)
       .send({ photosToDelete: 'invalid-json' });
 
@@ -250,38 +253,39 @@ describe('Posts API tests', () => {
     const testedPost = postsList[2];
 
     const response = await request(app)
-      .delete('/post/' + testedPost._id)
+      .delete(`${POST_URL}/${testedPost._id}`)
       .set('Authorization', `Bearer ${userData.token}`);
 
     expect(response.statusCode).toBe(StatusCodes.OK);
     expect(response.body._id).toBe(testedPost._id);
 
-    const getResponse = await request(app).get('/post/' + testedPost._id);
+    const getResponse = await request(app).get(`${POST_URL}/${testedPost._id}`);
     expect(getResponse.statusCode).toBe(StatusCodes.NOT_FOUND);
   });
 
   test('delete post with non-existing id', async () => {
-    const nonExistingId = new mongoose.Types.ObjectId(); // valid but non-existing ID
+    // valid but non-existing ID
+    const nonExistingId = new mongoose.Types.ObjectId();
 
     const response = await request(app)
-      .delete('/post/' + nonExistingId)
+      .delete(`${POST_URL}/${nonExistingId}`)
       .set('Authorization', `Bearer ${userData.token}`);
 
     expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
   });
 
-  test('delete post by non-owner should not work', async () => {
+  test('delete post by non-owner', async () => {
     await registerOtherTestUser(app);
 
     const response = await request(app)
-      .delete('/post/' + postsList[0]._id)
+      .delete(`${POST_URL}/${postsList[0]._id}`)
       .set('Authorization', `Bearer ${secondUser.token}`);
 
     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
   });
 
   test('delete post without auth', async () => {
-    const response = await request(app).delete('/post/' + postsList[0]._id);
+    const response = await request(app).delete(`${POST_URL}/${postsList[0]._id}`);
     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
   });
 });

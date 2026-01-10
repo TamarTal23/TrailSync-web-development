@@ -20,6 +20,8 @@ let app: Express;
 let commentsData: Array<CommentData> = [];
 let postIds: mongoose.Types.ObjectId[] = [];
 
+const COMMENT_URL = '/comment';
+
 beforeAll(async () => {
   app = await initApp();
   await Comments.deleteMany({});
@@ -41,29 +43,29 @@ afterAll(async () => {
 
 describe('Comments API test', () => {
   test('post comment without auth', async () => {
-    const response = await request(app).post('/comment').send(commentsData[0]);
+    const response = await request(app).post(COMMENT_URL).send(commentsData[0]);
     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
   });
 
   test('test get all empty db', async () => {
-    const response = await request(app).get('/comment');
+    const response = await request(app).get(COMMENT_URL);
     expect(response.statusCode).toBe(StatusCodes.OK);
     expect(response.body).toEqual([]);
   });
 
   test('create comment with missing required fields', async () => {
     const response = await request(app)
-      .post('/comment')
+      .post(COMMENT_URL)
       .set('Authorization', `Bearer ${userData.token}`)
-      .send({}); // empty payload
+      .send({});
 
-    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR); // or BAD_REQUEST if your controller validates
+    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
   });
 
   test('test post comments', async () => {
     for (const comment of commentsData) {
       const response = await request(app)
-        .post('/comment')
+        .post(COMMENT_URL)
         .set('Authorization', 'Bearer ' + userData.token)
         .send(comment);
 
@@ -77,7 +79,7 @@ describe('Comments API test', () => {
   });
 
   test('test get all comments after post', async () => {
-    const response = await request(app).get('/comment');
+    const response = await request(app).get(COMMENT_URL);
     expect(response.statusCode).toBe(StatusCodes.OK);
     expect(response.body.length).toBe(commentsData.length);
 
@@ -100,7 +102,7 @@ describe('Comments API test', () => {
         (comments) => comments.post.toString() === postId.toString()
       );
 
-      const res = await request(app).get('/comment').query({ post: postId.toString() });
+      const res = await request(app).get(COMMENT_URL).query({ post: postId.toString() });
 
       expect(res.statusCode).toBe(StatusCodes.OK);
       expect(res.body).toHaveLength(expected.length);
@@ -114,7 +116,7 @@ describe('Comments API test', () => {
   test('test get comment by comment id', async () => {
     const testedComment = commentsData[3];
 
-    const response = await request(app).get('/comment/' + testedComment._id);
+    const response = await request(app).get(`${COMMENT_URL}/${testedComment._id}`);
     expect(response.statusCode).toBe(StatusCodes.OK);
 
     expect(response.body._id).toBe(testedComment._id.toString());
@@ -126,25 +128,25 @@ describe('Comments API test', () => {
   });
 
   test('get comment with fake id', async () => {
-    const response = await request(app).get('/comment/' + new mongoose.Types.ObjectId());
+    const response = await request(app).get(`${COMMENT_URL}/${new mongoose.Types.ObjectId()}`);
     expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
   });
 
-  test('getCommentById with db error', async () => {
+  test('test get comment by id with db error', async () => {
     jest.spyOn(Comments, 'findById').mockImplementationOnce(() => {
       throw new Error('DB failure');
     });
 
-    const response = await request(app).get('/comment/' + commentsData[0]._id);
+    const response = await request(app).get(`${COMMENT_URL}/${commentsData[0]._id}`);
     expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
   });
 
-  test('get comments with db error', async () => {
+  test('test get comments with db error', async () => {
     jest.spyOn(Comments, 'find').mockImplementationOnce(() => {
       throw new Error('DB failure');
     });
 
-    const response = await request(app).get('/comment');
+    const response = await request(app).get(COMMENT_URL);
     expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
   });
 
@@ -153,7 +155,7 @@ describe('Comments API test', () => {
 
     testedComment.text = 'new comment text';
     const response = await request(app)
-      .put('/comment/' + testedComment._id)
+      .put(`${COMMENT_URL}/${testedComment._id}`)
       .set('Authorization', 'Bearer ' + userData.token)
       .send(testedComment);
     expect(response.statusCode).toBe(StatusCodes.OK);
@@ -164,7 +166,7 @@ describe('Comments API test', () => {
     const testedComment = commentsData[4];
 
     const response = await request(app)
-      .put('/comment/' + testedComment._id)
+      .put(`${COMMENT_URL}/${testedComment._id}`)
       .set('Authorization', `Bearer <fakeToken>`)
       .send({ text: 'Hack Attempt' });
 
@@ -175,20 +177,20 @@ describe('Comments API test', () => {
     const nonExistingId = new mongoose.Types.ObjectId();
 
     const response = await request(app)
-      .put('/comment/' + nonExistingId)
+      .put(`${COMMENT_URL}/${nonExistingId}`)
       .set('Authorization', 'Bearer ' + userData.token)
       .send({ text: 'Non-existing comment' });
 
     expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
   });
 
-  test('update comment by non-owner should not work', async () => {
+  test('update comment by non-owner', async () => {
     await registerOtherTestUser(app);
 
     const testedComment = commentsData[0];
 
     const res = await request(app)
-      .put('/comment/' + testedComment._id)
+      .put(`${COMMENT_URL}/${testedComment._id}`)
       .set('Authorization', 'Bearer ' + secondUser.token)
       .send({ text: 'hacked' });
 
@@ -199,7 +201,7 @@ describe('Comments API test', () => {
     const testedComment = commentsData[4];
 
     const response = await request(app)
-      .delete('/comment/' + testedComment._id)
+      .delete(`${COMMENT_URL}/${testedComment._id}`)
       .set('Authorization', 'Bearer ' + userData.token);
     expect(response.statusCode).toBe(StatusCodes.OK);
     expect(normalizeComment(response.body)).toEqual({
@@ -208,7 +210,7 @@ describe('Comments API test', () => {
       text: testedComment.text,
     });
 
-    const getResponse = await request(app).get('/comment/' + testedComment._id);
+    const getResponse = await request(app).get(`${COMMENT_URL}/${testedComment._id}`);
     expect(getResponse.statusCode).toBe(StatusCodes.NOT_FOUND);
   });
 
@@ -216,26 +218,26 @@ describe('Comments API test', () => {
     const nonExistingId = new mongoose.Types.ObjectId();
 
     const response = await request(app)
-      .delete('/comment/' + nonExistingId)
+      .delete(`${COMMENT_URL}/${nonExistingId}`)
       .set('Authorization', 'Bearer ' + userData.token);
 
     expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
   });
 
-  test('delete comment with db error', async () => {
+  test('test delete comment with db error', async () => {
     jest.spyOn(Comments, 'findByIdAndDelete').mockImplementationOnce(() => {
       throw new Error('DB failure');
     });
 
     const response = await request(app)
-      .delete('/comment/' + commentsData[0]._id)
+      .delete(`${COMMENT_URL}/${commentsData[0]._id}`)
       .set('Authorization', 'Bearer ' + userData.token);
 
     expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
   });
 
   test('delete comment without auth', async () => {
-    const res = await request(app).delete('/comment/' + commentsData[0]._id);
+    const res = await request(app).delete(`${COMMENT_URL}/${commentsData[0]._id}`);
 
     expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
   });

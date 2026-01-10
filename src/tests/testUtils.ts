@@ -38,6 +38,7 @@ export const secondUser: UserData = {
 };
 
 export const registerTestUser = (app: Express) => registerUser(app, userData, true);
+
 export const registerOtherTestUser = (app: Express) => registerUser(app, secondUser);
 
 export type PostData = {
