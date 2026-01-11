@@ -24,6 +24,7 @@ beforeAll(async () => {
   app = await initApp();
   await Post.deleteMany({});
   await registerTestUser(app);
+  await registerOtherTestUser(app);
 });
 
 afterAll(async () => {
@@ -230,14 +231,12 @@ describe('Posts API tests', () => {
   });
 
   test('update post by non-owner', async () => {
-    await registerOtherTestUser(app);
-
     const response = await request(app)
       .put(`${POST_URL}/${postsList[0]._id}`)
       .set('Authorization', `Bearer ${secondUser.token}`)
       .send({ title: 'Hack Attempt' });
 
-    expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
   });
 
   test('update post with invalid photosToDelete JSON', async () => {
@@ -275,13 +274,11 @@ describe('Posts API tests', () => {
   });
 
   test('delete post by non-owner', async () => {
-    await registerOtherTestUser(app);
-
     const response = await request(app)
       .delete(`${POST_URL}/${postsList[0]._id}`)
       .set('Authorization', `Bearer ${secondUser.token}`);
 
-    expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
   });
 
   test('delete post without auth', async () => {

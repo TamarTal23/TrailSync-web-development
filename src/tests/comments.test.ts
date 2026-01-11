@@ -26,6 +26,7 @@ beforeAll(async () => {
   app = await initApp();
   await Comments.deleteMany({});
   await registerTestUser(app);
+  await registerOtherTestUser(app);
 
   const createdPosts = await Promise.all(
     postsList.map((post) =>
@@ -185,8 +186,6 @@ describe('Comments API test', () => {
   });
 
   test('update comment by non-owner', async () => {
-    await registerOtherTestUser(app);
-
     const testedComment = commentsData[0];
 
     const res = await request(app)
@@ -194,7 +193,7 @@ describe('Comments API test', () => {
       .set('Authorization', 'Bearer ' + secondUser.token)
       .send({ text: 'hacked' });
 
-    expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    expect(res.statusCode).toBe(StatusCodes.FORBIDDEN);
   });
 
   test('test delete comment by id', async () => {

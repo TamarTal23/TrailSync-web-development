@@ -22,6 +22,7 @@ beforeAll(async () => {
   app = await initApp();
   await User.deleteMany({});
   await registerTestUser(app);
+  await registerOtherTestUser(app);
 });
 
 afterAll(async () => {
@@ -168,9 +169,7 @@ describe('Users API tests', () => {
     expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
   });
 
-  test('update user by another user should not work', async () => {
-    await registerOtherTestUser(app);
-
+  test('update user by another user', async () => {
     const response = await request(app)
       .put(`${USER_URL}/${userData._id}`)
       .set('Authorization', `Bearer ${secondUser.token}`)
@@ -180,8 +179,6 @@ describe('Users API tests', () => {
   });
 
   test('update user with duplicate email', async () => {
-    await registerOtherTestUser(app);
-
     const response = await request(app)
       .put(`${USER_URL}/${userData._id}`)
       .set('Authorization', `Bearer ${userData.token}`)
@@ -209,12 +206,12 @@ describe('Users API tests', () => {
     expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
   });
 
-  test('delete user by another user should not work', async () => {
+  test('delete user by another user', async () => {
     const response = await request(app)
       .delete(`${USER_URL}/${userData._id}`)
       .set('Authorization', `Bearer ${secondUser.token}`);
 
-    expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+    expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
   });
 
   test('delete user without auth', async () => {
