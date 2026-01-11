@@ -21,6 +21,14 @@ describe('Test Auth', () => {
     expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
   });
 
+  test('test creating post with Bearer but no token', async () => {
+    const response = await request(app)
+      .post('/post')
+      .set('Authorization', 'Bearer ')
+      .send(postsList[0]);
+    expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
+  });
+
   test('test Registration', async () => {
     const { email, password, username } = userData;
     const response = await request(app)
@@ -32,6 +40,46 @@ describe('Test Auth', () => {
     expect(response.body).toHaveProperty('refreshToken');
     userData.refreshTokens = response.body.refreshToken;
     userData._id = response.body._id;
+  });
+
+  test('test registration with profile picture', async () => {
+    const path = require('path');
+    const filePath = path.join(__dirname, 'assets', 'profile.jpg');
+
+    const response = await request(app)
+      .post(`${AUTH_URL}/register`)
+      .field('email', 'withphoto@test.com')
+      .field('password', 'password123')
+      .field('username', 'PhotoUser')
+      .attach('profilePicture', filePath);
+
+    expect(response.status).toBe(StatusCodes.CREATED);
+    expect(response.body).toHaveProperty('token');
+  });
+
+  test('register with invalid file type', async () => {
+    const response = await request(app)
+      .post(`${AUTH_URL}/register`)
+      .field('email', 'invalidfile@test.com')
+      .field('password', 'password123')
+      .field('username', 'InvalidFileUser')
+      .attach('profilePicture', Buffer.from('not an image'), 'test.txt');
+
+    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+  });
+
+  test('test registration failure with profile picture cleanup', async () => {
+    const path = require('path');
+    const filePath = path.join(__dirname, 'assets', 'profile.jpg');
+
+    const response = await request(app)
+      .post(`${AUTH_URL}/register`)
+      .field('email', userData.email)
+      .field('password', 'password123')
+      .field('username', 'DuplicateUser')
+      .attach('profilePicture', filePath);
+
+    expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
   });
 
   test('test registration with existing email', async () => {
@@ -202,6 +250,13 @@ describe('Test Auth', () => {
 
     expect(logoutRes.status).toBe(StatusCodes.OK);
     expect(logoutRes.body).toHaveProperty('message', 'Logged out successfully');
+
+    // Verify token was removed
+    const retryLogout = await request(app)
+      .post(`${AUTH_URL}/logout`)
+      .send({ refreshToken: validRefreshToken });
+
+    expect(retryLogout.status).toBe(StatusCodes.UNAUTHORIZED);
   });
 
   test('logout without refresh token fails', async () => {
@@ -217,6 +272,31 @@ describe('Test Auth', () => {
     expect(res.status).toBe(StatusCodes.UNAUTHORIZED);
   });
 
+  test('logout with valid token but user deleted', async () => {
+    const jwt = require('jsonwebtoken');
+    const deletedUserId = '507f1f77bcf86cd799439011';
+    const fakeToken = jwt.sign({ userId: deletedUserId }, process.env.JWT_SECRET!, {
+      expiresIn: '1h',
+    });
+
+    const res = await request(app).post(`${AUTH_URL}/logout`).send({ refreshToken: fakeToken });
+
+    expect(res.status).toBe(StatusCodes.UNAUTHORIZED);
+  });
+
+  test('logout with token not in user refreshTokens array', async () => {
+    const jwt = require('jsonwebtoken');
+    const validButNotInArrayToken = jwt.sign({ userId: userData._id }, process.env.JWT_SECRET!, {
+      expiresIn: '1h',
+    });
+
+    const res = await request(app)
+      .post(`${AUTH_URL}/logout`)
+      .send({ refreshToken: validButNotInArrayToken });
+
+    expect(res.status).toBe(StatusCodes.UNAUTHORIZED);
+  });
+
   test('logout with token not in user refreshTokens fails', async () => {
     const loginRes = await request(app)
       .post(`${AUTH_URL}/login`)
@@ -227,6 +307,20 @@ describe('Test Auth', () => {
     const res = await request(app)
       .post(`${AUTH_URL}/logout`)
       .send({ refreshToken: fakeRefreshToken });
+    expect(res.status).toBe(StatusCodes.UNAUTHORIZED);
+  });
+
+  test('refresh token when user not found', async () => {
+    const jwt = require('jsonwebtoken');
+    const fakeUserId = '507f1f77bcf86cd799439011';
+    const fakeToken = jwt.sign({ userId: fakeUserId }, process.env.JWT_SECRET!, {
+      expiresIn: '1h',
+    });
+
+    const res = await request(app)
+      .post(`${AUTH_URL}/refresh-token`)
+      .send({ refreshToken: fakeToken });
+
     expect(res.status).toBe(StatusCodes.UNAUTHORIZED);
   });
 });

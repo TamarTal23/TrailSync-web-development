@@ -54,6 +54,12 @@ describe('Comments API test', () => {
     expect(response.body).toEqual([]);
   });
 
+  test('get all comments without filters', async () => {
+    const response = await request(app).get(COMMENT_URL);
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(Array.isArray(response.body)).toBe(true);
+  });
+
   test('create comment with missing required fields', async () => {
     const response = await request(app)
       .post(COMMENT_URL)
@@ -239,5 +245,13 @@ describe('Comments API test', () => {
     const res = await request(app).delete(`${COMMENT_URL}/${commentsData[0]._id}`);
 
     expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  });
+
+  test('test delete comment by non-owner', async () => {
+    const res = await request(app)
+      .delete(`${COMMENT_URL}/${commentsData[0]._id}`)
+      .set('Authorization', `Bearer ${secondUser.token}`);
+
+    expect(res.statusCode).toBe(StatusCodes.FORBIDDEN);
   });
 });

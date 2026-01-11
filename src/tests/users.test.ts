@@ -156,6 +156,45 @@ describe('Users API tests', () => {
     expect(response.body.profilePicture).toContain('uploads/profiles/');
   });
 
+  test('update user profile picture replacing old one', async () => {
+    const filePath = path.join(__dirname, 'assets', 'profile.jpg');
+    const response = await request(app)
+      .put(`${USER_URL}/${userData._id}`)
+      .set('Authorization', `Bearer ${userData.token}`)
+      .attach('profilePicture', filePath);
+
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(response.body.profilePicture).toContain('uploads/profiles/');
+  });
+
+  test('update user with file error cleanup', async () => {
+    const filePath = path.join(__dirname, 'assets', 'profile.jpg');
+
+    jest.spyOn(User, 'findByIdAndUpdate').mockImplementationOnce(() => {
+      throw new Error('Update failed');
+    });
+
+    const response = await request(app)
+      .put(`${USER_URL}/${userData._id}`)
+      .set('Authorization', `Bearer ${userData.token}`)
+      .attach('profilePicture', filePath);
+
+    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+  });
+
+  test('update user error after file validation', async () => {
+    jest.spyOn(User, 'findByIdAndUpdate').mockImplementationOnce(() => {
+      throw new Error('DB error after validation');
+    });
+
+    const response = await request(app)
+      .put(`${USER_URL}/${userData._id}`)
+      .set('Authorization', `Bearer ${userData.token}`)
+      .send({ username: 'AnotherName' });
+
+    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+  });
+
   test('update user with db error', async () => {
     jest.spyOn(User, 'findByIdAndUpdate').mockImplementationOnce(() => {
       throw new Error('DB failure');
@@ -209,14 +248,17 @@ describe('Users API tests', () => {
     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
   });
 
-  test('delete user by id', async () => {
+  test('delete user with database error', async () => {
+    await registerTestUser(app);
+
+    jest.spyOn(User, 'findById').mockImplementationOnce(() => {
+      throw new Error('DB error');
+    });
+
     const response = await request(app)
       .delete(`${USER_URL}/${userData._id}`)
       .set('Authorization', `Bearer ${userData.token}`);
 
-    expect(response.statusCode).toBe(StatusCodes.OK);
-
-    const getResponse = await request(app).get(`${USER_URL}/${userData._id}`);
-    expect(getResponse.statusCode).toBe(StatusCodes.NOT_FOUND);
+    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
   });
 });

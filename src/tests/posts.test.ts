@@ -248,6 +248,82 @@ describe('Posts API tests', () => {
     expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
   });
 
+  test('update post with valid photosToDelete', async () => {
+    const testedPost = postsList[0];
+    const photosToDelete = JSON.stringify([testedPost.photos[0]]);
+
+    const response = await request(app)
+      .put(`${POST_URL}/${testedPost._id}`)
+      .set('Authorization', `Bearer ${userData.token}`)
+      .send({ photosToDelete });
+
+    expect(response.statusCode).toBe(StatusCodes.OK);
+  });
+
+  test('update post without any files', async () => {
+    const testedPost = postsList[0];
+
+    const response = await request(app)
+      .put(`${POST_URL}/${testedPost._id}`)
+      .set('Authorization', `Bearer ${userData.token}`)
+      .send({ title: 'Updated without files' });
+
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(response.body.title).toBe('Updated without files');
+  });
+
+  test('update post with empty files array', async () => {
+    const testedPost = postsList[1];
+
+    const response = await request(app)
+      .put(`${POST_URL}/${testedPost._id}`)
+      .set('Authorization', `Bearer ${userData.token}`)
+      .field('title', 'No files uploaded');
+
+    expect(response.statusCode).toBe(StatusCodes.OK);
+  });
+
+  test('update post with new photo', async () => {
+    const testedPost = postsList[1];
+    const filePath = path.join(__dirname, 'assets', 'newPhoto.jpg');
+
+    const response = await request(app)
+      .put(`${POST_URL}/${testedPost._id}`)
+      .set('Authorization', `Bearer ${userData.token}`)
+      .attach('photos', filePath);
+
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(response.body.photos.length).toBeGreaterThan(0);
+  });
+
+  test('update post error with file cleanup', async () => {
+    const filePath = path.join(__dirname, 'assets', 'newPhoto.jpg');
+
+    jest.spyOn(Post, 'findByIdAndUpdate').mockImplementationOnce(() => {
+      throw new Error('Update failed');
+    });
+
+    const response = await request(app)
+      .put(`${POST_URL}/${postsList[0]._id}`)
+      .set('Authorization', `Bearer ${userData.token}`)
+      .attach('photos', filePath);
+
+    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+  });
+
+  test('update post error without files', async () => {
+    jest.spyOn(Post, 'findById').mockImplementationOnce(() => {
+      throw new Error('DB error');
+    });
+
+    const response = await request(app)
+      .put(`${POST_URL}/${postsList[0]._id}`)
+      .set('Authorization', `Bearer ${userData.token}`)
+      .send({ title: 'This will fail' });
+
+    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+  });
+
   test('delete post by id', async () => {
     const testedPost = postsList[2];
 
@@ -284,5 +360,17 @@ describe('Posts API tests', () => {
   test('delete post without auth', async () => {
     const response = await request(app).delete(`${POST_URL}/${postsList[0]._id}`);
     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  });
+
+  test('delete post with database error', async () => {
+    jest.spyOn(Post, 'findById').mockImplementationOnce(() => {
+      throw new Error('DB error');
+    });
+
+    const response = await request(app)
+      .delete(`${POST_URL}/${postsList[0]._id}`)
+      .set('Authorization', `Bearer ${userData.token}`);
+
+    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
   });
 });
