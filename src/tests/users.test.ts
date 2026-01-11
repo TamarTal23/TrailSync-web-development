@@ -187,17 +187,6 @@ describe('Users API tests', () => {
     expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
   });
 
-  test('delete user by id', async () => {
-    const response = await request(app)
-      .delete(`${USER_URL}/${userData._id}`)
-      .set('Authorization', `Bearer ${userData.token}`);
-
-    expect(response.statusCode).toBe(StatusCodes.OK);
-
-    const getResponse = await request(app).get(`${USER_URL}/${userData._id}`);
-    expect(getResponse.statusCode).toBe(StatusCodes.NOT_FOUND);
-  });
-
   test('delete user with non-existent id', async () => {
     const response = await request(app)
       .delete(`${USER_URL}/${new mongoose.Types.ObjectId()}`)
@@ -218,5 +207,16 @@ describe('Users API tests', () => {
     const response = await request(app).delete(`${USER_URL}/${userData._id}`);
 
     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  });
+
+  test('delete user by id', async () => {
+    const response = await request(app)
+      .delete(`${USER_URL}/${userData._id}`)
+      .set('Authorization', `Bearer ${userData.token}`);
+
+    expect(response.statusCode).toBe(StatusCodes.OK);
+
+    const getResponse = await request(app).get(`${USER_URL}/${userData._id}`);
+    expect(getResponse.statusCode).toBe(StatusCodes.NOT_FOUND);
   });
 });
