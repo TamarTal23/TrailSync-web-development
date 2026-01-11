@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "dev": "nodemon ./src/index.ts",
     "pretest": "tsc && node ./dist/src/tests/utilities/createFakeImages.js",
-    "test": "tsc && jest --runInBand --detectOpenHandles --forceExit --silent --coverage",
+    "test": "tsc && jest --runInBand --detectOpenHandles --forceExit --silent",
     "test-auth": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/auth.test.ts",
     "test-comments": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/comments.test.ts",
     "pretest-posts": "tsc && node ./dist/src/tests/utilities/createFakeImages.js",
