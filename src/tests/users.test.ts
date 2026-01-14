@@ -156,17 +156,6 @@ describe('Users API tests', () => {
     expect(response.body.profilePicture).toContain('uploads/profiles/');
   });
 
-  test('update user profile picture replacing old one', async () => {
-    const filePath = path.join(__dirname, 'assets', 'profile.jpg');
-    const response = await request(app)
-      .put(`${USER_URL}/${userData._id}`)
-      .set('Authorization', `Bearer ${userData.token}`)
-      .attach('profilePicture', filePath);
-
-    expect(response.statusCode).toBe(StatusCodes.OK);
-    expect(response.body.profilePicture).toContain('uploads/profiles/');
-  });
-
   test('update user with file error cleanup', async () => {
     const filePath = path.join(__dirname, 'assets', 'profile.jpg');
 

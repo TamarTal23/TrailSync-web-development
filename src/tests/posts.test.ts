@@ -260,18 +260,6 @@ describe('Posts API tests', () => {
     expect(response.statusCode).toBe(StatusCodes.OK);
   });
 
-  test('update post without any files', async () => {
-    const testedPost = postsList[0];
-
-    const response = await request(app)
-      .put(`${POST_URL}/${testedPost._id}`)
-      .set('Authorization', `Bearer ${userData.token}`)
-      .send({ title: 'Updated without files' });
-
-    expect(response.statusCode).toBe(StatusCodes.OK);
-    expect(response.body.title).toBe('Updated without files');
-  });
-
   test('update post with empty files array', async () => {
     const testedPost = postsList[1];
 

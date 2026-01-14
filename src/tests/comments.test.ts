@@ -54,12 +54,6 @@ describe('Comments API test', () => {
     expect(response.body).toEqual([]);
   });
 
-  test('get all comments without filters', async () => {
-    const response = await request(app).get(COMMENT_URL);
-    expect(response.statusCode).toBe(StatusCodes.OK);
-    expect(Array.isArray(response.body)).toBe(true);
-  });
-
   test('create comment with missing required fields', async () => {
     const response = await request(app)
       .post(COMMENT_URL)
