@@ -38,7 +38,8 @@ export const secondUser: UserData = {
 };
 
 export const registerTestUser = (app: Express) => registerUser(app, userData, true);
-export const registerOtherTestUser = (app: Express) => registerUser(app, secondUser);
+
+export const registerOtherTestUser = (app: Express) => registerUser(app, secondUser, true);
 
 export type PostData = {
   _id: mongoose.Types.ObjectId;
