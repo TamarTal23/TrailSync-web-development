@@ -84,7 +84,7 @@ const login = async (req: Request, res: Response) => {
     user.refreshTokens.push(tokens.refreshToken);
     await user.save();
 
-    res.status(StatusCodes.OK).json(tokens);
+    res.status(StatusCodes.OK).json({ tokens, userId: user._id });
   } catch (error) {
     console.error('Login error:', error);
 
