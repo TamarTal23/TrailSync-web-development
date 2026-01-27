@@ -48,12 +48,12 @@ const register = async (req: Request, res: Response) => {
 
     const createdUser = await User.create(userData);
     const user = handleCreateRes(createdUser);
-    const newToken = generateToken(user._id.toString());
+    const tokens = generateToken(user._id.toString());
 
-    user.refreshTokens.push(newToken.refreshToken);
+    user.refreshTokens.push(tokens.refreshToken);
     await user.save();
 
-    res.status(StatusCodes.CREATED).json(newToken);
+    res.status(StatusCodes.CREATED).json({ tokens, userId: user._id });
   } catch (error) {
     console.error('Registration error:', error);
 
