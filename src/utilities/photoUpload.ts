@@ -21,7 +21,8 @@ const profileStorage = multer.diskStorage({
     callback(null, 'uploads/profiles/');
   },
   filename: (req: AuthRequest, file, callback) => {
-    callback(null, `${req.userId}-${file.originalname}`);
+    const userId = req.userId || NEW_IMAGE_PLACEHOLDER;
+    callback(null, `${userId}-${file.originalname}`);
   },
 });
 
@@ -92,4 +93,20 @@ export const renamePostFiles = (
 
     return normalizeFilePath(newPath);
   });
+};
+
+export const renameProfileFile = (
+  oldPath: string,
+  userId: string,
+  placeholder: string = NEW_IMAGE_PLACEHOLDER
+): string => {
+  const filename = path.basename(oldPath);
+  const newFilename = filename.replace(placeholder, userId);
+  const newPath = path.join(path.dirname(oldPath), newFilename);
+
+  if (fs.existsSync(oldPath)) {
+    fs.renameSync(oldPath, newPath);
+  }
+
+  return normalizeFilePath(newPath);
 };
