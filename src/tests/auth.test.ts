@@ -40,11 +40,11 @@ describe('Test Auth', () => {
       .post(`${AUTH_URL}/register`)
       .send({ email, password, username });
     expect(response.status).toBe(StatusCodes.CREATED);
-    expect(response.body).toHaveProperty('token');
-    userData.token = response.body.token;
-    expect(response.body).toHaveProperty('refreshToken');
-    userData.refreshTokens = response.body.refreshToken;
-    userData._id = response.body._id;
+    expect(response.body).toHaveProperty('tokens.token');
+    userData.token = response.body.tokens.token;
+    expect(response.body).toHaveProperty('tokens.refreshToken');
+    userData.refreshTokens = response.body.tokens.refreshToken;
+    userData.id = response.body.userId;
   });
 
   test('test registration with profile picture', async () => {
@@ -59,7 +59,7 @@ describe('Test Auth', () => {
       .attach('profilePicture', filePath);
 
     expect(response.status).toBe(StatusCodes.CREATED);
-    expect(response.body).toHaveProperty('token');
+    expect(response.body).toHaveProperty('tokens.token');
   });
 
   test('register with invalid file type', async () => {
@@ -131,10 +131,10 @@ describe('Test Auth', () => {
       .post(`${AUTH_URL}/login`)
       .send({ email: email, password: password });
     expect(response.status).toBe(StatusCodes.OK);
-    expect(response.body).toHaveProperty('token');
-    expect(response.body).toHaveProperty('refreshToken');
-    userData.token = response.body.token;
-    userData.refreshTokens = response.body.refreshToken;
+    expect(response.body).toHaveProperty('tokens.token');
+    expect(response.body).toHaveProperty('tokens.refreshToken');
+    userData.token = response.body.tokens.token;
+    userData.refreshTokens = response.body.tokens.refreshToken;
   });
 
   test('test login with wrong password fails', async () => {
@@ -247,7 +247,7 @@ describe('Test Auth', () => {
       .send({ email: userData.email, password: userData.password });
 
     expect(loginRes.status).toBe(StatusCodes.OK);
-    const validRefreshToken = loginRes.body.refreshToken;
+    const validRefreshToken = loginRes.body.tokens.refreshToken;
 
     const logoutRes = await request(app)
       .post(`${AUTH_URL}/logout`)
@@ -291,7 +291,7 @@ describe('Test Auth', () => {
 
   test('logout with token not in user refreshTokens array', async () => {
     const jwt = require('jsonwebtoken');
-    const validButNotInArrayToken = jwt.sign({ userId: userData._id }, process.env.JWT_SECRET!, {
+    const validButNotInArrayToken = jwt.sign({ userId: userData.id }, process.env.JWT_SECRET!, {
       expiresIn: '1h',
     });
 
@@ -307,7 +307,7 @@ describe('Test Auth', () => {
       .post(`${AUTH_URL}/login`)
       .send({ email: userData.email, password: userData.password });
 
-    const fakeRefreshToken = loginRes.body.refreshToken + 'x';
+    const fakeRefreshToken = loginRes.body.tokens.refreshToken + 'x';
 
     const res = await request(app)
       .post(`${AUTH_URL}/logout`)

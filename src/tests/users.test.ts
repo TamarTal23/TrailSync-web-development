@@ -31,26 +31,28 @@ afterAll(async () => {
 
 describe('Users API tests', () => {
   test('update user without auth', async () => {
-    const response = await request(app).put(`${USER_URL}/${userData._id}`).send({
+    const response = await request(app).put(`${USER_URL}/${userData.id}`).send({
       username: 'Hacker',
     });
     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
   });
 
-  test('update user with duplicate email', async () => {
+  test('update user with duplicate email (same email)', async () => {
     const response = await request(app)
-      .put(`${USER_URL}/${userData._id}`)
+      .put(`${USER_URL}/${userData.id}`)
       .set('Authorization', `Bearer ${userData.token}`)
       .send({ email: userData.email });
 
-    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+    // Updating to the same email should succeed (no duplicate error)
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(response.body.email).toBe(userData.email);
   });
 
   test('get all users', async () => {
     const response = await request(app).get(USER_URL);
     expect(response.statusCode).toBe(StatusCodes.OK);
 
-    userData._id = response.body[0]._id;
+    userData.id = response.body[0].id;
 
     const normalizedResponse = response.body.map(normalizeUser);
 
@@ -81,7 +83,7 @@ describe('Users API tests', () => {
 
     expect(normalizedUsers).toContainEqual(
       expect.objectContaining({
-        _id: userData._id?.toString(),
+        id: userData.id?.toString(),
         email: userData.email,
         username: userData.username,
         profilePicture: null,
@@ -90,13 +92,13 @@ describe('Users API tests', () => {
   });
 
   test('get user by id', async () => {
-    const response = await request(app).get(`${USER_URL}/${userData._id}`);
+    const response = await request(app).get(`${USER_URL}/${userData.id}`);
     expect(response.statusCode).toBe(StatusCodes.OK);
 
     const user = normalizeUser(response.body);
 
     expect(user).toMatchObject({
-      _id: userData._id?.toString(),
+      id: userData.id?.toString(),
       email: userData.email,
       username: userData.username,
       profilePicture: null,
@@ -108,7 +110,7 @@ describe('Users API tests', () => {
       throw new Error('DB failure');
     });
 
-    const response = await request(app).get(`${USER_URL}/${userData._id}`);
+    const response = await request(app).get(`${USER_URL}/${userData.id}`);
     expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
   });
 
@@ -120,7 +122,7 @@ describe('Users API tests', () => {
   test('update user by id', async () => {
     const newUsername = 'UpdatedUser';
     const response = await request(app)
-      .put(`${USER_URL}/${userData._id}`)
+      .put(`${USER_URL}/${userData.id}`)
       .set('Authorization', `Bearer ${userData.token}`)
       .send({ username: newUsername });
 
@@ -139,7 +141,7 @@ describe('Users API tests', () => {
 
   test('test update user with fake token', async () => {
     const response = await request(app)
-      .put(`${USER_URL}/${userData._id}`)
+      .put(`${USER_URL}/${userData.id}`)
       .set('Authorization', `Bearer <fakeToken>`)
       .send({ username: 'Hacker' });
     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
@@ -148,7 +150,7 @@ describe('Users API tests', () => {
   test('update user profile picture', async () => {
     const filePath = path.join(__dirname, 'assets', 'profile.jpg');
     const response = await request(app)
-      .put(`${USER_URL}/${userData._id}`)
+      .put(`${USER_URL}/${userData.id}`)
       .set('Authorization', `Bearer ${userData.token}`)
       .attach('profilePicture', filePath);
 
@@ -164,7 +166,7 @@ describe('Users API tests', () => {
     });
 
     const response = await request(app)
-      .put(`${USER_URL}/${userData._id}`)
+      .put(`${USER_URL}/${userData.id}`)
       .set('Authorization', `Bearer ${userData.token}`)
       .attach('profilePicture', filePath);
 
@@ -177,7 +179,7 @@ describe('Users API tests', () => {
     });
 
     const response = await request(app)
-      .put(`${USER_URL}/${userData._id}`)
+      .put(`${USER_URL}/${userData.id}`)
       .set('Authorization', `Bearer ${userData.token}`)
       .send({ username: 'AnotherName' });
 
@@ -190,7 +192,7 @@ describe('Users API tests', () => {
     });
 
     const response = await request(app)
-      .put(`${USER_URL}/${userData._id}`)
+      .put(`${USER_URL}/${userData.id}`)
       .set('Authorization', `Bearer ${userData.token}`)
       .send({ username: 'ShouldFail' });
 
@@ -199,7 +201,7 @@ describe('Users API tests', () => {
 
   test('update user by another user', async () => {
     const response = await request(app)
-      .put(`${USER_URL}/${userData._id}`)
+      .put(`${USER_URL}/${userData.id}`)
       .set('Authorization', `Bearer ${secondUser.token}`)
       .send({ username: 'Hacker' });
 
@@ -208,7 +210,7 @@ describe('Users API tests', () => {
 
   test('update user with duplicate email', async () => {
     const response = await request(app)
-      .put(`${USER_URL}/${userData._id}`)
+      .put(`${USER_URL}/${userData.id}`)
       .set('Authorization', `Bearer ${userData.token}`)
       .send({ email: secondUser.email });
 
@@ -225,14 +227,14 @@ describe('Users API tests', () => {
 
   test('delete user by another user', async () => {
     const response = await request(app)
-      .delete(`${USER_URL}/${userData._id}`)
+      .delete(`${USER_URL}/${userData.id}`)
       .set('Authorization', `Bearer ${secondUser.token}`);
 
     expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
   });
 
   test('delete user without auth', async () => {
-    const response = await request(app).delete(`${USER_URL}/${userData._id}`);
+    const response = await request(app).delete(`${USER_URL}/${userData.id}`);
 
     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
   });
@@ -245,7 +247,7 @@ describe('Users API tests', () => {
     });
 
     const response = await request(app)
-      .delete(`${USER_URL}/${userData._id}`)
+      .delete(`${USER_URL}/${userData.id}`)
       .set('Authorization', `Bearer ${userData.token}`);
 
     expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);

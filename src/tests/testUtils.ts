@@ -1,15 +1,15 @@
 import { Express } from 'express';
 import request from 'supertest';
 import User, { UserType } from '../model/userModel';
-import mongoose from 'mongoose';
-import { CommentType } from '../model/commentModel';
 import { PostType } from '../model/postModel';
+import { CommentType } from '../model/commentModel';
+import mongoose from 'mongoose';
 
 type UserData = {
   email: string;
   password: string;
   username: string;
-  _id?: string;
+  id?: string;
   token?: string;
   refreshTokens?: string;
 };
@@ -26,7 +26,9 @@ export const registerUser = async (app: Express, user: UserData, cleanup = false
   }
 
   const res = await request(app).post('/auth/register').send(user);
-  user.token = res.body.token;
+  user.token = res.body.tokens?.token;
+  user.refreshTokens = res.body.tokens?.refreshToken;
+  user.id = res.body.userId;
 
   return res;
 };
@@ -189,9 +191,10 @@ export const createCommentsData = (postIds: mongoose.Types.ObjectId[]): CommentD
 
 /*The normalization functions convert the Mongoose document to a plain object
  and extract only relevant fields for comparison in tests.*/
-export const normalizePost = (post: PostType & { _id: string }) => ({
-  _id: post._id,
-  sender: post.sender._id,
+
+export const normalizePost = (post: PostType & { id: string }) => ({
+  id: post.id,
+  sender: post.sender.id,
   title: post.title,
   mapLink: post.mapLink,
   price: post.price,
@@ -204,14 +207,14 @@ export const normalizePost = (post: PostType & { _id: string }) => ({
   photos: post.photos,
 });
 
-export const normalizeComment = (comment: CommentType & { _id: string }) => ({
-  _id: comment._id,
+export const normalizeComment = (comment: CommentType & { id: string }) => ({
+  id: comment.id,
   post: comment.post,
   text: comment.text,
 });
 
-export const normalizeUser = (user: UserType & { _id: string }) => ({
-  _id: user._id,
+export const normalizeUser = (user: UserType & { id: string }) => ({
+  id: user.id,
   email: user.email,
   username: user.username,
   profilePicture: user.profilePicture || null,

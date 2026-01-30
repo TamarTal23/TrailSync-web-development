@@ -34,7 +34,7 @@ beforeAll(async () => {
     )
   );
 
-  postIds = createdPosts.map((res) => new mongoose.Types.ObjectId(res.body._id));
+  postIds = createdPosts.map((res) => new mongoose.Types.ObjectId(res.body.id));
   commentsData = createCommentsData(postIds);
 });
 
@@ -72,7 +72,7 @@ describe('Comments API test', () => {
 
       expect(response.statusCode).toBe(StatusCodes.CREATED);
       expect(normalizeComment(response.body)).toEqual({
-        _id: comment._id.toString(),
+        id: comment._id.toString(),
         post: comment.post.toString(),
         text: comment.text,
       });
@@ -88,7 +88,7 @@ describe('Comments API test', () => {
 
     commentsData.forEach((expectedComment) => {
       const expectedCommentNormalized = {
-        _id: expectedComment._id.toString(),
+        id: expectedComment._id.toString(),
         post: expectedComment.post.toString(),
         text: expectedComment.text,
       };
@@ -120,9 +120,9 @@ describe('Comments API test', () => {
     const response = await request(app).get(`${COMMENT_URL}/${testedComment._id}`);
     expect(response.statusCode).toBe(StatusCodes.OK);
 
-    expect(response.body._id).toBe(testedComment._id.toString());
+    expect(response.body.id).toBe(testedComment._id.toString());
     expect(normalizeComment(response.body)).toEqual({
-      _id: testedComment._id.toString(),
+      id: testedComment._id.toString(),
       post: testedComment.post.toString(),
       text: testedComment.text,
     });
@@ -204,7 +204,7 @@ describe('Comments API test', () => {
       .set('Authorization', 'Bearer ' + userData.token);
     expect(response.statusCode).toBe(StatusCodes.OK);
     expect(normalizeComment(response.body)).toEqual({
-      _id: testedComment._id.toString(),
+      id: testedComment._id.toString(),
       post: testedComment.post.toString(),
       text: testedComment.text,
     });
