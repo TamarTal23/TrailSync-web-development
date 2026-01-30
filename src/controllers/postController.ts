@@ -66,7 +66,8 @@ class PostController extends BaseController {
         })
         .populate({
           path: 'comments',
-        });
+        })
+        .sort({ updatedAt: -1 });
 
       res.json(data);
     } catch (error) {
