@@ -54,7 +54,27 @@ class PostController extends BaseController {
     }
   };
 
-  getAllPosts = async (req: Request, res: Response) => super.get(req, res);
+  getAllPosts = async (req: Request, res: Response) => {
+    const filter = req.query ?? {};
+
+    try {
+      const data = await this.model
+        .find(filter)
+        .populate({
+          path: 'sender',
+          select: 'username email profilePicture',
+        })
+        .populate({
+          path: 'comments',
+        });
+
+      res.json(data);
+    } catch (error) {
+      res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: (error as Error)?.message ?? 'An unknown error occurred' });
+    }
+  };
 
   getPostById = async (req: Request, res: Response) => super.getById(req, res);
 

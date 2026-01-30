@@ -64,5 +64,11 @@ postSchema.set('toJSON', {
   },
 });
 
+postSchema.virtual('comments', {
+  ref: 'Comment',
+  localField: '_id',
+  foreignField: 'post',
+});
+
 export default mongoose.model('Post', postSchema);
 export type PostType = InferSchemaType<typeof postSchema>;
