@@ -37,13 +37,15 @@ describe('Users API tests', () => {
     expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
   });
 
-  test('update user with duplicate email', async () => {
+  test('update user with duplicate email (same email)', async () => {
     const response = await request(app)
       .put(`${USER_URL}/${userData.id}`)
       .set('Authorization', `Bearer ${userData.token}`)
       .send({ email: userData.email });
 
-    expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+    // Updating to the same email should succeed (no duplicate error)
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(response.body.email).toBe(userData.email);
   });
 
   test('get all users', async () => {

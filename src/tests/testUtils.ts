@@ -26,7 +26,9 @@ export const registerUser = async (app: Express, user: UserData, cleanup = false
   }
 
   const res = await request(app).post('/auth/register').send(user);
-  user.token = res.body.token;
+  user.token = res.body.tokens?.token;
+  user.refreshTokens = res.body.tokens?.refreshToken;
+  user.id = res.body.userId;
 
   return res;
 };
