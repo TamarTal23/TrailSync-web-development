@@ -3,7 +3,7 @@ import User from '../model/userModel';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
-import { deleteFile, normalizeFilePath } from '../utilities/photoUpload';
+import { deleteFile, renameProfileFile, NEW_IMAGE_PLACEHOLDER } from '../utilities/photoUpload';
 import { handleCreateRes } from '../utilities/general';
 
 const sendError = (res: Response, message: string, code?: number) => {
@@ -42,18 +42,23 @@ const register = async (req: Request, res: Response) => {
       username,
     };
 
-    if (req.file) {
-      userData.profilePicture = normalizeFilePath(req.file.path);
-    }
-
     const createdUser = await User.create(userData);
     const user = handleCreateRes(createdUser);
-    const newToken = generateToken(user._id.toString());
 
-    user.refreshTokens.push(newToken.refreshToken);
+    if (req.file) {
+      const renamedPath = renameProfileFile(
+        req.file.path,
+        user._id.toString(),
+        NEW_IMAGE_PLACEHOLDER
+      );
+      user.profilePicture = renamedPath;
+    }
+
+    const tokens = generateToken(user._id.toString());
+    user.refreshTokens.push(tokens.refreshToken);
     await user.save();
 
-    res.status(StatusCodes.CREATED).json(newToken);
+    res.status(StatusCodes.CREATED).json({ tokens, userId: user._id });
   } catch (error) {
     console.error('Registration error:', error);
 
@@ -84,7 +89,7 @@ const login = async (req: Request, res: Response) => {
     user.refreshTokens.push(tokens.refreshToken);
     await user.save();
 
-    res.status(StatusCodes.OK).json(tokens);
+    res.status(StatusCodes.OK).json({ tokens, userId: user._id });
   } catch (error) {
     console.error('Login error:', error);
 
