@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import BaseController from './baseController';
 import { StatusCodes } from 'http-status-codes';
 import { deleteFile, normalizeFilePath } from '../utilities/photoUpload';
+import bcrypt from 'bcrypt';
 import { AuthRequest } from '../middlewares/authMiddleware';
 
 const FORBIDDEN_MESSAGE = 'Forbidden';
@@ -34,6 +35,12 @@ class UserController extends BaseController {
         }
 
         req.body.profilePicture = normalizeFilePath(req.file.path);
+      }
+
+      if (req.body.password) {
+        const salt = await bcrypt.genSalt(10);
+        const encryptedPassword = await bcrypt.hash(req.body.password, salt);
+        req.body.password = encryptedPassword;
       }
 
       return super.put(req, res);
