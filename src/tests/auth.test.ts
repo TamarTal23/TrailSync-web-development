@@ -44,7 +44,7 @@ describe('Test Auth', () => {
     userData.token = response.body.token;
     expect(response.body).toHaveProperty('refreshToken');
     userData.refreshTokens = response.body.refreshToken;
-    userData._id = response.body._id;
+    userData.id = response.body.id;
   });
 
   test('test registration with profile picture', async () => {
@@ -291,7 +291,7 @@ describe('Test Auth', () => {
 
   test('logout with token not in user refreshTokens array', async () => {
     const jwt = require('jsonwebtoken');
-    const validButNotInArrayToken = jwt.sign({ userId: userData._id }, process.env.JWT_SECRET!, {
+    const validButNotInArrayToken = jwt.sign({ userId: userData.id }, process.env.JWT_SECRET!, {
       expiresIn: '1h',
     });
 

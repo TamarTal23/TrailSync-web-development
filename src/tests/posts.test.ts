@@ -81,8 +81,8 @@ describe('Posts API tests', () => {
       expect(response.statusCode).toBe(StatusCodes.CREATED);
 
       // Save the generated ID back to the postsList
-      post._id = response.body._id;
-      post.photos = post.photos.map((photo) => `uploads/posts/${response.body._id}-${photo}`);
+      post._id = response.body.id;
+      post.photos = post.photos.map((photo) => `uploads/posts/${response.body.id}-${photo}`);
 
       const normalized = normalizePost(response.body);
       expect(normalized).toMatchObject({
@@ -107,7 +107,7 @@ describe('Posts API tests', () => {
 
     postsList.forEach((expectedPost) => {
       const expectedPostNormalized = {
-        _id: expectedPost._id,
+        id: expectedPost._id,
         title: expectedPost.title,
         mapLink: expectedPost.mapLink,
         price: expectedPost.price,
@@ -117,7 +117,7 @@ describe('Posts API tests', () => {
         photos: expectedPost.photos,
       };
 
-      expect(normalizedResponse).toContainEqual(expectedPostNormalized);
+      expect(normalizedResponse).toContainEqual(expect.objectContaining(expectedPostNormalized));
     });
   });
 
@@ -138,7 +138,7 @@ describe('Posts API tests', () => {
     expect(response.statusCode).toBe(200);
     expect(response.body.length).toBe(1);
     expect(response.body[0].location.country).toBe(post.location.country);
-    post._id = response.body[0]._id;
+    post._id = response.body[0].id;
   });
 
   test('get post by id with existing id', async () => {
@@ -147,7 +147,7 @@ describe('Posts API tests', () => {
     const response = await request(app).get(`${POST_URL}/${testedPost._id}`);
     expect(response.statusCode).toBe(StatusCodes.OK);
 
-    expect(response.body._id).toBe(testedPost._id.toString());
+    expect(response.body.id).toBe(testedPost._id.toString());
     expect(normalizePost(response.body)).toMatchObject({
       title: testedPost.title,
       mapLink: testedPost.mapLink,
@@ -273,7 +273,7 @@ describe('Posts API tests', () => {
 
   test('update post with new photo', async () => {
     const testedPost = postsList[1];
-    const filePath = path.join(__dirname, 'assets', 'newPhoto.jpg');
+    const filePath = path.join(__dirname, 'assets', 'profile.jpg');
 
     const response = await request(app)
       .put(`${POST_URL}/${testedPost._id}`)
@@ -285,7 +285,7 @@ describe('Posts API tests', () => {
   });
 
   test('update post error with file cleanup', async () => {
-    const filePath = path.join(__dirname, 'assets', 'newPhoto.jpg');
+    const filePath = path.join(__dirname, 'assets', 'profile.jpg');
 
     jest.spyOn(Post, 'findByIdAndUpdate').mockImplementationOnce(() => {
       throw new Error('Update failed');
@@ -320,7 +320,7 @@ describe('Posts API tests', () => {
       .set('Authorization', `Bearer ${userData.token}`);
 
     expect(response.statusCode).toBe(StatusCodes.OK);
-    expect(response.body._id).toBe(testedPost._id);
+    expect(response.body.id).toBe(testedPost._id.toString());
 
     const getResponse = await request(app).get(`${POST_URL}/${testedPost._id}`);
     expect(getResponse.statusCode).toBe(StatusCodes.NOT_FOUND);

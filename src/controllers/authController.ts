@@ -58,7 +58,13 @@ const register = async (req: Request, res: Response) => {
     user.refreshTokens.push(tokens.refreshToken);
     await user.save();
 
-    res.status(StatusCodes.CREATED).json({ tokens, userId: user._id });
+    res
+      .status(StatusCodes.CREATED)
+      .json({
+        token: tokens.token,
+        refreshToken: tokens.refreshToken,
+        id: user.id ?? user._id.toString(),
+      });
   } catch (error) {
     console.error('Registration error:', error);
 
@@ -89,7 +95,13 @@ const login = async (req: Request, res: Response) => {
     user.refreshTokens.push(tokens.refreshToken);
     await user.save();
 
-    res.status(StatusCodes.OK).json({ tokens, userId: user._id });
+    res
+      .status(StatusCodes.OK)
+      .json({
+        token: tokens.token,
+        refreshToken: tokens.refreshToken,
+        id: user.id ?? user._id.toString(),
+      });
   } catch (error) {
     console.error('Login error:', error);
 
