@@ -5,7 +5,6 @@ import jwt from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
 import { deleteFile, renameProfileFile, NEW_IMAGE_PLACEHOLDER } from '../utilities/photoUpload';
 import { handleCreateRes } from '../utilities/general';
-import { OAuth2Client } from 'google-auth-library';
 
 const sendError = (res: Response, message: string, code?: number) => {
   const errCode = code || StatusCodes.BAD_REQUEST;
@@ -169,18 +168,20 @@ const refreshTokens = async (req: Request, res: Response) => {
   }
 };
 
-const client = new OAuth2Client();
-
 export const googleLogin = async (req: Request, res: Response) => {
-  const credential = req.body.credentials;
+  const credentials = req.body.credentials;
 
   try {
-    const loginReq = await client.verifyIdToken({
-      idToken: credential,
-      audience: process.env.CLIENT_ID,
+    const googleLoginResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${credentials}` },
     });
 
-    const payload = loginReq.getPayload();
+    if (!googleLoginResponse.ok) {
+      throw new Error('Google login failed');
+    }
+
+    const payload = await googleLoginResponse.json();
+
     req.body.email = payload?.email;
 
     const email = payload?.email;
