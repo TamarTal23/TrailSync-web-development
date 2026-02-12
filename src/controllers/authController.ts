@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
 import { deleteFile, renameProfileFile, NEW_IMAGE_PLACEHOLDER } from '../utilities/photoUpload';
 import { handleCreateRes } from '../utilities/general';
+import { OAuth2Client } from 'google-auth-library';
 
 const sendError = (res: Response, message: string, code?: number) => {
   const errCode = code || StatusCodes.BAD_REQUEST;
@@ -168,9 +169,46 @@ const refreshTokens = async (req: Request, res: Response) => {
   }
 };
 
+const client = new OAuth2Client();
+
+export const googleLogin = async (req: Request, res: Response) => {
+  const credential = req.body.credentials;
+
+  try {
+    const loginReq = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.CLIENT_ID,
+    });
+
+    const payload = loginReq.getPayload();
+    req.body.email = payload?.email;
+
+    const email = payload?.email;
+    let user = await User.findOne({ email: email });
+
+    if (!user) {
+      user = await User.create({
+        email: email,
+        profilePicture: payload?.picture,
+        password: 'google-signin',
+        username: payload?.name || email?.split('@')[0] || 'Google User',
+      });
+    }
+
+    const tokens = generateToken(user.id);
+
+    res.status(StatusCodes.OK).json({ tokens, userId: user.id ?? user._id.toString() });
+  } catch (error) {
+    console.error('Google login error:', error);
+
+    res.status(400).send('error in google login');
+  }
+};
+
 export default {
   register,
   login,
   logout,
+  googleLogin,
   refreshTokens,
 };
