@@ -70,7 +70,7 @@ class PostController extends BaseController {
         .sort({ updatedAt: -1 });
 
       if (batchSize && page) {
-        const pageNum = parseInt(page as string);
+        const pageNum = parseInt(page as string) - 1;
         const currBatchSize = parseInt(batchSize as string);
 
         const skip = pageNum * currBatchSize;
