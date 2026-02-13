@@ -8,7 +8,7 @@ import { uploadPostPhotos } from '../utilities/photoUpload';
  * @swagger
  * /post:
  *   get:
- *     summary: Get all posts (with optional filters)
+ *     summary: Get all posts (with optional filters and pagination)
  *     tags: [Posts]
  *     parameters:
  *       - in: query
@@ -26,15 +26,29 @@ import { uploadPostPhotos } from '../utilities/photoUpload';
  *         schema:
  *           type: string
  *         description: Filter by city
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *         description: Page number (0-indexed, requires batchSize parameter)
+ *       - in: query
+ *         name: batchSize
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Number of posts per batch (requires page parameter)
  *     responses:
  *       200:
- *         description: List of posts
+ *         description: List of posts. Returns batched response if both page and batchSize are provided, otherwise returns all posts as an array.
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Post'
+ *               oneOf:
+ *                 - type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Post'
+ *                 - $ref: '#/components/schemas/BatchedPostsResponse'
  *       500:
  *         description: Server error
  */
