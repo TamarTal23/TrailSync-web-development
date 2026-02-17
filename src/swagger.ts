@@ -195,6 +195,22 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
+        BatchedPostsResponse: {
+          type: 'object',
+          properties: {
+            data: {
+              type: 'array',
+              items: {
+                $ref: '#/components/schemas/Post',
+              },
+              description: 'Array of posts',
+            },
+            hasMore: {
+              type: 'boolean',
+              description: 'Whether there are more posts available in subsequent pages',
+            },
+          },
+        },
       },
     },
   },

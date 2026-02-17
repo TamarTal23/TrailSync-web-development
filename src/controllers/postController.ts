@@ -55,10 +55,10 @@ class PostController extends BaseController {
   };
 
   getAllPosts = async (req: Request, res: Response) => {
-    const filter = req.query ?? {};
+    const { page, batchSize, ...filter } = req.query;
 
     try {
-      const data = await this.model
+      let query = this.model
         .find(filter)
         .populate({
           path: 'sender',
@@ -69,6 +69,23 @@ class PostController extends BaseController {
         })
         .sort({ updatedAt: -1 });
 
+      if (batchSize && page) {
+        const pageNum = parseInt(page as string) - 1;
+        const currBatchSize = parseInt(batchSize as string);
+
+        const skip = pageNum * currBatchSize;
+        query = query.skip(skip).limit(currBatchSize);
+
+        const data = await query;
+        const total = await this.model.countDocuments(filter);
+
+        return res.json({
+          data,
+          hasMore: (pageNum + 1) * currBatchSize < total,
+        });
+      }
+
+      const data = await query;
       res.json(data);
     } catch (error) {
       res
