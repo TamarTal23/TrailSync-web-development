@@ -97,6 +97,84 @@ describe('Posts API tests', () => {
     }
   });
 
+  test('get posts with pagination - first page', async () => {
+    const batchSize = 3;
+    const page = 1;
+
+    const response = await request(app).get(POST_URL).query({ page, batchSize });
+
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(response.body).toHaveProperty('data');
+    expect(response.body).toHaveProperty('hasMore');
+    expect(Array.isArray(response.body.data)).toBe(true);
+    expect(response.body.data.length).toBeLessThanOrEqual(batchSize);
+    expect(response.body.hasMore).toBe(true);
+  });
+
+  test('get posts with pagination - last page', async () => {
+    const batchSize = 3;
+    const page = 2;
+
+    const response = await request(app).get(POST_URL).query({ page, batchSize });
+
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(response.body).toHaveProperty('data');
+    expect(response.body).toHaveProperty('hasMore');
+    expect(response.body.hasMore).toBe(false);
+  });
+
+  test('get posts with pagination - beyond last page returns empty', async () => {
+    const batchSize = 10;
+    const page = 100;
+
+    const response = await request(app).get(POST_URL).query({ page, batchSize });
+
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(response.body.data).toEqual([]);
+    expect(response.body.hasMore).toBe(false);
+  });
+
+  test('get posts with pagination and filter', async () => {
+    const batchSize = 1;
+    const page = 1;
+    const country = postsList[0].location.country;
+
+    const response = await request(app)
+      .get(POST_URL)
+      .query({ page, batchSize, 'location.country': country });
+
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(response.body.data.length).toBeLessThanOrEqual(batchSize);
+
+    if (response.body.data.length > 0) {
+      expect(response.body.data[0].location.country).toBe(country);
+    }
+  });
+
+  test('get posts without pagination returns array directly', async () => {
+    const response = await request(app).get(POST_URL);
+
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body).not.toHaveProperty('hasMore');
+  });
+
+  test('get posts with only page parameter (no batchSize) returns all posts', async () => {
+    const response = await request(app).get(POST_URL).query({ page: 1 });
+
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body).not.toHaveProperty('hasMore');
+  });
+
+  test('get posts with only batchSize parameter (no page) returns all posts', async () => {
+    const response = await request(app).get(POST_URL).query({ batchSize: 2 });
+
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body).not.toHaveProperty('hasMore');
+  });
+
   test('get all posts after create', async () => {
     const response = await request(app).get(POST_URL);
 

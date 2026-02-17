@@ -76,12 +76,12 @@ class PostController extends BaseController {
         const skip = pageNum * currBatchSize;
         query = query.skip(skip).limit(currBatchSize);
 
-        const total = await this.model.countDocuments(filter);
         const data = await query;
+        const total = await this.model.countDocuments(filter);
 
         return res.json({
           data,
-          hasMore: pageNum * currBatchSize < total,
+          hasMore: (pageNum + 1) * currBatchSize < total,
         });
       }
 
