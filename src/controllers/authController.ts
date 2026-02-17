@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
 import { deleteFile, renameProfileFile, NEW_IMAGE_PLACEHOLDER } from '../utilities/photoUpload';
 import { handleCreateRes } from '../utilities/general';
+import { randomUUID } from 'node:crypto';
 
 const sendError = (res: Response, message: string, code?: number) => {
   const errCode = code || StatusCodes.BAD_REQUEST;
@@ -171,8 +172,10 @@ const refreshTokens = async (req: Request, res: Response) => {
 export const googleLogin = async (req: Request, res: Response) => {
   const credentials = req.body.credentials;
 
+  const googleOAuthUrl = 'https://www.googleapis.com/oauth2/v3/userinfo';
+
   try {
-    const googleLoginResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+    const googleLoginResponse = await fetch(googleOAuthUrl, {
       headers: { Authorization: `Bearer ${credentials}` },
     });
 
@@ -182,16 +185,17 @@ export const googleLogin = async (req: Request, res: Response) => {
 
     const payload = await googleLoginResponse.json();
 
-    req.body.email = payload?.email;
-
     const email = payload?.email;
+
+    req.body.email = email;
+
     let user = await User.findOne({ email: email });
 
     if (!user) {
       user = await User.create({
-        email: email,
+        email,
         profilePicture: payload?.picture,
-        password: 'google-signin',
+        password: randomUUID(),
         username: payload?.name || email?.split('@')[0] || 'Google User',
       });
     }
