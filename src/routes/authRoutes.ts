@@ -83,6 +83,8 @@ router.post('/register', uploadProfile.single('profilePicture'), authController.
  */
 router.post('/login', authController.login);
 
+router.post('/google-login', authController.googleLogin);
+
 /**
  * @swagger
  * /auth/refresh-token:

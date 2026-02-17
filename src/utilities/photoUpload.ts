@@ -75,7 +75,8 @@ export const deleteFiles = (filePaths: string[]): void => {
   filePaths.forEach((filePath) => deleteFile(filePath));
 };
 
-export const normalizeFilePath = (filePath: string) => filePath.replace(/\\/g, '/');
+export const normalizeFilePath = (filePath: string) =>
+  `http://127.0.0.1:5000/${filePath.replace(/\\/g, '/')}`;
 
 export const renamePostFiles = (
   oldPaths: string[],
