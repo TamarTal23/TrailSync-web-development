@@ -84,16 +84,8 @@ export const renamePostFiles = (
 ): string[] => {
   return oldPaths.map((oldPath) => {
     const filename = path.basename(oldPath);
-    console.log({ filename });
-
     const newFilename = filename.replace(placeholder, createdId);
-    console.log({ newFilename });
-
-    console.log({ oldPath });
-
     const newPath = path.join(path.dirname(oldPath), newFilename);
-
-    console.log({ newPath });
 
     if (fs.existsSync(oldPath)) {
       fs.renameSync(oldPath, newPath);
