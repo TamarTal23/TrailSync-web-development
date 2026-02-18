@@ -115,7 +115,15 @@ class PostController extends BaseController {
 
       if (req.body.photosToDelete) {
         try {
-          const photosToDelete: string[] = JSON.parse(req.body.photosToDelete);
+          const rawPhotosToDelete = req.body.photosToDelete;
+
+          const photosToDelete: string[] =
+            typeof rawPhotosToDelete === 'string'
+              ? [rawPhotosToDelete]
+              : Array.isArray(rawPhotosToDelete)
+                ? rawPhotosToDelete
+                : [];
+
           deleteFiles(photosToDelete);
           currentPhotos = currentPhotos.filter((photo) => !photosToDelete.includes(photo));
         } catch (error) {
@@ -128,8 +136,8 @@ class PostController extends BaseController {
       }
 
       if (req.files && Array.isArray(req.files) && req.files.length > 0) {
-        const newPhotoPaths = req.files.map((file: Express.Multer.File) =>
-          normalizeFilePath(file.path)
+        const newPhotoPaths = req.files.map(
+          (file: Express.Multer.File) => `http://127.0.0.1:5000/${normalizeFilePath(file.path)}`
         );
 
         currentPhotos = uniq([...currentPhotos, ...newPhotoPaths]);

@@ -34,7 +34,7 @@ class UserController extends BaseController {
           deleteFile(user.profilePicture);
         }
 
-        req.body.profilePicture = normalizeFilePath(req.file.path);
+        req.body.profilePicture = `http://127.0.0.1:5000/${normalizeFilePath(req.file.path)}`;
       }
 
       if (req.body.password) {
