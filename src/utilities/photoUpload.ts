@@ -75,8 +75,7 @@ export const deleteFiles = (filePaths: string[]): void => {
   filePaths.forEach((filePath) => deleteFile(filePath));
 };
 
-export const normalizeFilePath = (filePath: string) =>
-  `http://127.0.0.1:5000/${filePath.replace(/\\/g, '/')}`;
+export const normalizeFilePath = (filePath: string) => filePath.replace(/\\/g, '/');
 
 export const renamePostFiles = (
   oldPaths: string[],
@@ -85,14 +84,22 @@ export const renamePostFiles = (
 ): string[] => {
   return oldPaths.map((oldPath) => {
     const filename = path.basename(oldPath);
+    console.log({ filename });
+
     const newFilename = filename.replace(placeholder, createdId);
+    console.log({ newFilename });
+
+    console.log({ oldPath });
+
     const newPath = path.join(path.dirname(oldPath), newFilename);
+
+    console.log({ newPath });
 
     if (fs.existsSync(oldPath)) {
       fs.renameSync(oldPath, newPath);
     }
 
-    return normalizeFilePath(newPath);
+    return `http://127.0.0.1:5000/${normalizeFilePath(newPath)}`;
   });
 };
 
