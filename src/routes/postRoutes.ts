@@ -21,19 +21,19 @@ import { uploadPostPhotos } from '../utilities/photoUpload';
  *         schema:
  *           type: integer
  *           minimum: 0
- *         description: Minimum number of days (numberOfDays >= minDays)
+ *         description: Minimum number of days 
  *       - in: query
  *         name: maxDays
  *         schema:
  *           type: integer
  *           minimum: 0
- *         description: Maximum number of days (numberOfDays <= maxDays)
+ *         description: Maximum number of days
  *       - in: query
  *         name: maxPrice
  *         schema:
  *           type: number
  *           minimum: 0
- *         description: Maximum price (price <= maxPrice)
+ *         description: Maximum price 
  *       - in: query
  *         name: city
  *         schema:
@@ -49,7 +49,7 @@ import { uploadPostPhotos } from '../utilities/photoUpload';
  *         schema:
  *           type: integer
  *           minimum: 0
- *         description: Page number (0-indexed, requires batchSize parameter)
+ *         description: Page number 
  *       - in: query
  *         name: batchSize
  *         schema:
