@@ -11,7 +11,7 @@ import {
   normalizeFilePath,
   renamePostFiles,
 } from '../utilities/photoUpload';
-import { handleCreateRes } from '../utilities/general';
+import { handleCreateRes, buildFilterQuery } from '../utilities/general';
 
 class PostController extends BaseController {
   constructor() {
@@ -55,9 +55,11 @@ class PostController extends BaseController {
   };
 
   getAllPosts = async (req: Request, res: Response) => {
-    const { page, batchSize, ...filter } = req.query;
+    const { page, batchSize, ...filterParams } = req.query;
 
     try {
+      const filter = buildFilterQuery(filterParams);
+
       let query = this.model
         .find(filter)
         .populate({

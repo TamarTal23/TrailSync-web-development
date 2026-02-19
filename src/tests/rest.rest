@@ -7,6 +7,30 @@ GET http://localhost:5000/post
 GET http://localhost:5000/post?sender=69469337bda8e6485e5c88e8
 
 ###
+# Filter posts with maxPrice (price <= 100)
+GET http://localhost:5000/post?maxPrice=100
+
+###
+# Filter posts with minDays and maxDays (3 <= numberOfDays <= 7)
+GET http://localhost:5000/post?minDays=3&maxDays=7
+
+###
+# Filter posts by country
+GET http://localhost:5000/post?country=USA
+
+###
+# Filter posts by city and country
+GET http://localhost:5000/post?city=NewYork&country=USA
+
+###
+# Combined filters: price, days, and location
+GET http://localhost:5000/post?maxPrice=500&minDays=2&maxDays=10&country=USA
+
+###
+# Filter with pagination
+GET http://localhost:5000/post?maxPrice=1000&page=1&batchSize=10
+
+###
 
 GET http://localhost:5000/post/694d36e5841dc6be59183449
 

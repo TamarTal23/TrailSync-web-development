@@ -17,15 +17,33 @@ import { uploadPostPhotos } from '../utilities/photoUpload';
  *           type: string
  *         description: Filter by sender user id
  *       - in: query
- *         name: location.country
+ *         name: minDays
  *         schema:
- *           type: string
- *         description: Filter by country
+ *           type: integer
+ *           minimum: 0
+ *         description: Minimum number of days (numberOfDays >= minDays)
  *       - in: query
- *         name: location.city
+ *         name: maxDays
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *         description: Maximum number of days (numberOfDays <= maxDays)
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
+ *           minimum: 0
+ *         description: Maximum price (price <= maxPrice)
+ *       - in: query
+ *         name: city
  *         schema:
  *           type: string
- *         description: Filter by city
+ *         description: Filter by city (exact match)
+ *       - in: query
+ *         name: country
+ *         schema:
+ *           type: string
+ *         description: Filter by country (exact match)
  *       - in: query
  *         name: page
  *         schema:
