@@ -12,6 +12,7 @@ import {
   renamePostFiles,
 } from '../utilities/photoUpload';
 import { handleCreateRes, buildFilterQuery } from '../utilities/general';
+import PostSearchService from '../services/PostSearchService';
 
 class PostController extends BaseController {
   constructor() {
@@ -95,6 +96,52 @@ class PostController extends BaseController {
         .json({ error: (error as Error)?.message ?? 'An unknown error occurred' });
     }
   };
+
+  async search(req: Request, res: Response): Promise<void> {
+    try {
+      console.log({ q: req.body });
+
+      if (!req.body.query || typeof req.body.query !== 'string') {
+        res
+          .status(StatusCodes.BAD_REQUEST)
+          .json({ error: 'Query is required and must be a string' });
+        return;
+      }
+
+      const query = req.body.query.trim();
+      if (query.length === 0) {
+        res.status(StatusCodes.BAD_REQUEST).json({ error: 'Query cannot be empty' });
+        return;
+      }
+
+      if (query.length > 500) {
+        res.status(StatusCodes.BAD_REQUEST).json({ error: 'Query too long (max 500 characters)' });
+        return;
+      }
+
+      const postsMatching = await PostSearchService.search({
+        query,
+      });
+
+      res.status(StatusCodes.OK).json(postsMatching);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Search error:', error);
+
+        if (error.name === 'ValidationError') {
+          res.status(400).json({ error: error.message });
+          return;
+        }
+
+        if (error.name === 'LLMServiceError') {
+          res.status(503).json({ error: 'Search service temporarily unavailable' });
+          return;
+        }
+      }
+
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 
   getPostById = async (req: Request, res: Response) => super.getById(req, res);
 
