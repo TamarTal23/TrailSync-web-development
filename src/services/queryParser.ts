@@ -48,6 +48,7 @@ class QueryParserService {
 
       if (shouldFallback && queryParsingOptions.fallbackToKeywords !== false) {
         console.warn('LLM parsing failed, falling back to keyword extraction:', error.message);
+
         return this.fallbackKeywordParsing(query);
       }
 
