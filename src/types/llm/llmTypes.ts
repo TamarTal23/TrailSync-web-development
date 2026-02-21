@@ -21,3 +21,20 @@ export interface LLMClientConfig {
   timeout: number;
   maxRetries: number;
 }
+
+export interface LLMQueryResponse {
+  titleKeywords: string[];
+  descriptionKeywords?: string[];
+  daysRange?: {
+    min?: number;
+    max?: number;
+  };
+  maxPrice?: number;
+  location?: {
+    country: string;
+    city?: string;
+  };
+  searchType: 'title' | 'decription' | 'days' | 'price' | 'location' | 'combined' | 'semantic';
+  confidence: number;
+  reasoning?: string;
+}

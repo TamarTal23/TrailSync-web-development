@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { LLMClientConfig, LLMOptions, LLMResponse } from '../types/llm/llm';
+import { LLMClientConfig, LLMOptions, LLMResponse } from '../types/llm/llmTypes';
 import {
   LLMAuthenticationError,
   LLMServiceError,
