@@ -2,7 +2,7 @@ import { LLMParsingError, LLMServiceError } from '../types/llm/errors/errors';
 import { LLMQueryResponse } from '../types/llm/llmTypes';
 import { QueryParsingError, QueryValidationError } from '../types/search/errors';
 import { ParsedPostQuery, QueryParsingOptions } from '../types/search/searchTypes';
-import { SYSTEM_PROMPT } from '../utilities/queryParser';
+import { SYSTEM_PROMPT } from '../utilities/prompt';
 import llmClient from './llmClient';
 
 class QueryParserService {
@@ -19,7 +19,7 @@ class QueryParserService {
 
       const { response, success } = await llmClient.generateResponse(prompt, {
         temperature: 0.1,
-        max_tokens: 500,
+        max_tokens: 2000,
       });
 
       if (!success || !response) {

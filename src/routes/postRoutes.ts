@@ -260,7 +260,7 @@ router.delete('/:id', authenticate, postController.deletePost.bind(postControlle
  * /post/search:
  *   post:
  *     summary: Search travel posts using natural language
- *     description: Search for travel posts using natural language queries powered by openAI api.
+ *     description: Search for travel posts using natural language queries powered by gemini api.
  *     tags: [Posts]
  *     security: []
  *     requestBody:

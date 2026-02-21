@@ -1,3 +1,5 @@
+import { UsageMetadata } from '@google/generative-ai';
+
 export interface LLMOptions {
   model?: string;
   temperature?: number;
@@ -8,11 +10,7 @@ export interface LLMOptions {
 export interface LLMResponse {
   success: boolean;
   response: string;
-  usage?: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-  };
+  usage?: UsageMetadata;
 }
 
 export interface LLMClientConfig {

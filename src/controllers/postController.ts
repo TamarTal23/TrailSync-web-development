@@ -99,8 +99,6 @@ class PostController extends BaseController {
 
   async search(req: Request, res: Response): Promise<void> {
     try {
-      console.log({ q: req.body });
-
       if (!req.body.query || typeof req.body.query !== 'string') {
         res
           .status(StatusCodes.BAD_REQUEST)
