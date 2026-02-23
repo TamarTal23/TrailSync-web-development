@@ -17,7 +17,9 @@ export const buildFiltersFromParsedQuery = (parsedQuery: Partial<ParsedPostQuery
   if (descriptionKeywords?.length) {
     filter.$or = [
       ...(filter.$or || []),
-      ...descriptionKeywords.map((kw) => ({ description: { $regex: kw, $options: 'i' } })),
+      ...descriptionKeywords.map((keyWord) => ({
+        description: { $regex: keyWord, $options: 'i' },
+      })),
     ];
   }
 

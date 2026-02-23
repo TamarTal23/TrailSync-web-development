@@ -114,12 +114,15 @@ class QueryParserService {
 
       const { maxKeywords } = queryParsingOptions || {};
 
-      if (!titleKeywords || !Array.isArray(titleKeywords)) {
-        return false;
-      }
+      const isStringArray = (value: unknown): value is string[] =>
+        Array.isArray(value) && value.every((v) => typeof v === 'string');
+
+      const isNumberInRange = (value: unknown, min: number, max: number) =>
+        typeof value === 'number' && value >= min && value <= max;
 
       if (
-        !titleKeywords.every((k) => typeof k === 'string') ||
+        !titleKeywords ||
+        !isStringArray(titleKeywords) ||
         (maxKeywords && titleKeywords.length > maxKeywords)
       ) {
         return false;
@@ -134,15 +137,14 @@ class QueryParserService {
         return false;
       }
 
-      if (typeof confidence !== 'number' || confidence < 0 || confidence > 1) {
+      if (typeof confidence !== 'number' || isNumberInRange(confidence, 0, 1)) {
         return false;
       }
 
       if (descriptionKeywords) {
         if (
           descriptionKeywords &&
-          (!Array.isArray(descriptionKeywords) ||
-            !descriptionKeywords.every((k) => typeof k === 'string') ||
+          (!isStringArray(descriptionKeywords) ||
             (maxKeywords && descriptionKeywords.length > maxKeywords))
         ) {
           return false;
@@ -152,11 +154,11 @@ class QueryParserService {
       if (daysRange) {
         const { min, max } = daysRange;
 
-        if (min !== undefined && (typeof min !== 'number' || min < 1 || min > 365)) {
+        if (min !== undefined && (typeof min !== 'number' || isNumberInRange(min, 1, 365))) {
           return false;
         }
 
-        if (max !== undefined && (typeof max !== 'number' || max < 1 || max > 365)) {
+        if (max !== undefined && (typeof max !== 'number' || isNumberInRange(max, 1, 365))) {
           return false;
         }
 
@@ -166,7 +168,7 @@ class QueryParserService {
       }
 
       if (maxPrice !== undefined) {
-        if (typeof maxPrice !== 'number' || maxPrice <= 0 || maxPrice > 1_000_000) {
+        if (typeof maxPrice !== 'number' || isNumberInRange(maxPrice, 0, 1_000_000)) {
           return false;
         }
       }
@@ -232,7 +234,7 @@ Respond with JSON only:`;
   private fallbackKeywordParsing(query: string): ParsedPostQuery {
     const trimmedQuery = query.trim().toLowerCase();
 
-    /* Simple keyword extraction  - get all "words" from the query,
+    /*get all "words" from the query,
      filter out short/common words, and take the top 5 as title keywords*/
     const titleKeywords = trimmedQuery
       .replace(/[^\w\s]/g, ' ')

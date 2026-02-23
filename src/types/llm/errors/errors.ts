@@ -1,3 +1,5 @@
+import { StatusCodes } from 'http-status-codes';
+
 export class LLMServiceError extends Error {
   constructor(
     message: string,
@@ -13,14 +15,14 @@ export class LLMServiceError extends Error {
 
 export class LLMAuthenticationError extends LLMServiceError {
   constructor(message: string) {
-    super(message, 401);
+    super(message, StatusCodes.UNAUTHORIZED);
     this.name = 'LLMAuthenticationError';
   }
 }
 
 export class LLMTimeoutError extends LLMServiceError {
   constructor(message: string) {
-    super(message, 408);
+    super(message, StatusCodes.REQUEST_TIMEOUT);
     this.name = 'LLMTimeoutError';
   }
 }

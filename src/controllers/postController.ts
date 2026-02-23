@@ -117,27 +117,29 @@ class PostController extends BaseController {
         return;
       }
 
-      const postsMatching = await PostSearchService.search({
+      const matchingPosts = await PostSearchService.search({
         query,
       });
 
-      res.status(StatusCodes.OK).json(postsMatching);
+      res.status(StatusCodes.OK).json(matchingPosts);
     } catch (error) {
       if (error instanceof Error) {
         console.error('Search error:', error);
 
         if (error.name === 'ValidationError') {
-          res.status(400).json({ error: error.message });
+          res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
           return;
         }
 
         if (error.name === 'LLMServiceError') {
-          res.status(503).json({ error: 'Search service temporarily unavailable' });
+          res
+            .status(StatusCodes.SERVICE_UNAVAILABLE)
+            .json({ error: 'Search service temporarily unavailable' });
           return;
         }
       }
 
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' });
     }
   }
 

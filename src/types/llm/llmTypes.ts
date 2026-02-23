@@ -20,6 +20,8 @@ export interface LLMClientConfig {
   maxRetries: number;
 }
 
+type searchTypes = 'title' | 'decription' | 'days' | 'price' | 'location' | 'combined' | 'semantic';
+
 export interface LLMQueryResponse {
   titleKeywords: string[];
   descriptionKeywords?: string[];
@@ -32,7 +34,7 @@ export interface LLMQueryResponse {
     country: string;
     city?: string;
   };
-  searchType: 'title' | 'decription' | 'days' | 'price' | 'location' | 'combined' | 'semantic';
+  searchType: searchTypes;
   confidence: number;
   reasoning?: string;
 }
