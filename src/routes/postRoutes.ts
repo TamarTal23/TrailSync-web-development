@@ -21,7 +21,7 @@ import { uploadPostPhotos } from '../utilities/photoUpload';
  *         schema:
  *           type: integer
  *           minimum: 0
- *         description: Minimum number of days 
+ *         description: Minimum number of days
  *       - in: query
  *         name: maxDays
  *         schema:
@@ -33,7 +33,7 @@ import { uploadPostPhotos } from '../utilities/photoUpload';
  *         schema:
  *           type: number
  *           minimum: 0
- *         description: Maximum price 
+ *         description: Maximum price
  *       - in: query
  *         name: city
  *         schema:
@@ -49,7 +49,7 @@ import { uploadPostPhotos } from '../utilities/photoUpload';
  *         schema:
  *           type: integer
  *           minimum: 0
- *         description: Page number 
+ *         description: Page number
  *       - in: query
  *         name: batchSize
  *         schema:
@@ -255,5 +255,40 @@ router.put(
  *         description: Server error
  */
 router.delete('/:id', authenticate, postController.deletePost.bind(postController));
+/**
+ * @swagger
+ * /post/search:
+ *   post:
+ *     summary: Search travel posts using natural language
+ *     description: Search for travel posts using natural language queries powered by gemini api.
+ *     tags: [Posts]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [query]
+ *             properties:
+ *               query:
+ *                 type: string
+ *                 description: Natural language search query
+ *                 example: "trips to Italy under $3000"
+ *     responses:
+ *       200:
+ *         description: Search completed successfully, a list of posts matching is returned
+ *         content:
+ *           application/json:
+ *             schema:
+ *                 - type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Post'
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ */
+router.post('/search', postController.search.bind(postController));
 
 export default router;
