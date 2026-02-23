@@ -3,7 +3,7 @@ import { Express } from 'express';
 import User from '../model/userModel';
 import { initApp } from '..';
 import { expect, test, beforeAll, describe, jest, afterAll } from '@jest/globals';
-import { postsList, userData } from './testUtils';
+import { postsList, userData } from './utilities/testUtils';
 import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
 

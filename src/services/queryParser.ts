@@ -137,7 +137,7 @@ class QueryParserService {
         return false;
       }
 
-      if (typeof confidence !== 'number' || isNumberInRange(confidence, 0, 1)) {
+      if (typeof confidence !== 'number' || !isNumberInRange(confidence, 0, 1)) {
         return false;
       }
 
@@ -154,11 +154,11 @@ class QueryParserService {
       if (daysRange) {
         const { min, max } = daysRange;
 
-        if (min !== undefined && (typeof min !== 'number' || isNumberInRange(min, 1, 365))) {
+        if (min !== undefined && (typeof min !== 'number' || !isNumberInRange(min, 1, 365))) {
           return false;
         }
 
-        if (max !== undefined && (typeof max !== 'number' || isNumberInRange(max, 1, 365))) {
+        if (max !== undefined && (typeof max !== 'number' || !isNumberInRange(max, 1, 365))) {
           return false;
         }
 
@@ -168,7 +168,7 @@ class QueryParserService {
       }
 
       if (maxPrice !== undefined) {
-        if (typeof maxPrice !== 'number' || isNumberInRange(maxPrice, 0, 1_000_000)) {
+        if (typeof maxPrice !== 'number' || !isNumberInRange(maxPrice, 0, 10_000_000)) {
           return false;
         }
       }
@@ -259,11 +259,19 @@ Respond with JSON only:`;
       daysRange = { min, max };
     }
 
+    let maxPrice: number | undefined;
+    const priceMatch = trimmedQuery.match(/(under|below|max|up to)\s*(\d+)|\$(\d+)|(\d+)\$/);
+
+    if (priceMatch) {
+      maxPrice = parseInt(priceMatch[2] || priceMatch[3] || priceMatch[4]);
+    }
+
     const result: ParsedPostQuery = {
       titleKeywords,
       descriptionKeywords: descriptionKeywords ?? undefined,
       daysRange,
-      searchType: daysRange ? 'combined' : 'title',
+      maxPrice,
+      searchType: daysRange || maxPrice ? 'combined' : 'title',
       confidence: 0.3,
     };
 
