@@ -11,7 +11,7 @@ import {
   normalizeUser,
   registerOtherTestUser,
   secondUser,
-} from './testUtils';
+} from './utilities/testUtils';
 import path from 'node:path';
 
 let app: Express;

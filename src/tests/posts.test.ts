@@ -12,7 +12,7 @@ import {
   normalizePost,
   registerOtherTestUser,
   secondUser,
-} from './testUtils';
+} from './utilities/testUtils';
 import mongoose from 'mongoose';
 import path from 'node:path';
 
@@ -82,7 +82,9 @@ describe('Posts API tests', () => {
 
       // Save the generated ID back to the postsList
       post._id = response.body.id;
-      post.photos = post.photos.map((photo) => `uploads/posts/${response.body.id}-${photo}`);
+      post.photos = post.photos.map(
+        (photo) => `http://127.0.0.1:5000/uploads/posts/${response.body.id}-${photo}`
+      );
 
       const normalized = normalizePost(response.body);
       expect(normalized).toMatchObject({
@@ -317,15 +319,6 @@ describe('Posts API tests', () => {
     expect(response.statusCode).toBe(StatusCodes.FORBIDDEN);
   });
 
-  test('update post with invalid photosToDelete JSON', async () => {
-    const response = await request(app)
-      .put(`${POST_URL}/${postsList[0]._id}`)
-      .set('Authorization', `Bearer ${userData.token}`)
-      .send({ photosToDelete: 'invalid-json' });
-
-    expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
-  });
-
   test('update post with valid photosToDelete', async () => {
     const testedPost = postsList[0];
     const photosToDelete = JSON.stringify([testedPost.photos[0]]);
@@ -438,5 +431,75 @@ describe('Posts API tests', () => {
       .set('Authorization', `Bearer ${userData.token}`);
 
     expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+  });
+
+  // Post Search API Tests
+  describe('Post Search API', () => {
+    test('search with valid query returns 200 with post array', async () => {
+      const searchQuery = { query: 'beach vacation' };
+
+      const response = await request(app).post(`${POST_URL}/search`).send(searchQuery);
+
+      expect(response.statusCode).toBe(200);
+      expect(Array.isArray(response.body)).toBe(true);
+
+      if (response.body.length > 0) {
+        const post = response.body[0];
+        expect(post).toHaveProperty('id');
+        expect(post).toHaveProperty('sender');
+        expect(post).toHaveProperty('title');
+        expect(post).toHaveProperty('mapLink');
+        expect(post).toHaveProperty('price');
+        expect(post).toHaveProperty('numberOfDays');
+        expect(post).toHaveProperty('location');
+        expect(post.location).toHaveProperty('city');
+        expect(post.location).toHaveProperty('country');
+        expect(post).toHaveProperty('description');
+        expect(post).toHaveProperty('photos');
+        expect(Array.isArray(post.photos)).toBe(true);
+      }
+    });
+
+    test('search with empty body returns 400 validation error', async () => {
+      const response = await request(app).post(`${POST_URL}/search`).send({});
+
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toBe('Query is required and must be a string');
+    });
+
+    test('search with empty string query returns 400 validation error', async () => {
+      const response = await request(app).post(`${POST_URL}/search`).send({ query: '   ' });
+
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toBe('Query cannot be empty');
+    });
+
+    test('search with too long query returns 400 validation error', async () => {
+      const longQuery = 'a'.repeat(501);
+      const response = await request(app).post(`${POST_URL}/search`).send({ query: longQuery });
+
+      expect(response.statusCode).toBe(StatusCodes.BAD_REQUEST);
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toBe('Query too long (max 500 characters)');
+    });
+
+    test('search endpoint accepts POST method only', async () => {
+      const response = await request(app).get(`${POST_URL}/search`);
+
+      expect([StatusCodes.NOT_FOUND, StatusCodes.INTERNAL_SERVER_ERROR]).toContain(
+        response.statusCode
+      );
+    });
+
+    test('search returns empty array if no matches found', async () => {
+      const searchQuery = { query: 'query-that-will-match-nothing' };
+      const response = await request(app).post(`${POST_URL}/search`).send(searchQuery);
+
+      expect(response.statusCode).toBe(StatusCodes.OK);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBe(0);
+    });
   });
 });

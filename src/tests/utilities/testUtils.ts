@@ -1,8 +1,8 @@
 import { Express } from 'express';
 import request from 'supertest';
-import User, { UserType } from '../model/userModel';
-import { PostType } from '../model/postModel';
-import { CommentType } from '../model/commentModel';
+import User, { UserType } from '../../model/userModel';
+import { PostType } from '../../model/postModel';
+import { CommentType } from '../../model/commentModel';
 import mongoose from 'mongoose';
 
 type UserData = {

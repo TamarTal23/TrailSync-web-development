@@ -10,7 +10,7 @@ import {
   normalizeComment,
   registerOtherTestUser,
   secondUser,
-} from './testUtils';
+} from './utilities/testUtils';
 import { afterAll, beforeAll, describe, expect, jest, test } from '@jest/globals';
 import { initApp } from '..';
 import mongoose from 'mongoose';
