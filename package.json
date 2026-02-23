@@ -9,7 +9,7 @@
     "start": "tsc && node ./dist/src/index.js",
     "lint": "eslint .",
     "dev": "nodemon ./src/index.ts",
-    "prod": " tsc -p tsconfig_prod.json && pm2 restart ecosystem.config.js --env production",
+    "prod": "tsc -p tsconfig_prod.json && pm2 restart ecosystem.config.js --env production",
     "pretest": "tsc && node ./dist/src/tests/utilities/createFakeImages.js",
     "test": "tsc && jest --runInBand --detectOpenHandles --forceExit --silent",
     "test-services": "tsc && jest --runInBand --detectOpenHandles --forceExit src/tests/services/",

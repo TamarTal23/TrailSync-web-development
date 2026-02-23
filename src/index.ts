@@ -1,4 +1,7 @@
 import express, { Request, Response } from 'express';
+import fs from 'fs';
+import http from 'http';
+import https from 'https';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import postRoutes from './routes/postRoutes';
@@ -12,6 +15,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const HTTPS_PORT = process.env.PORT || 433;
 
 app.use(cors());
 app.use(express.json());
@@ -39,9 +43,18 @@ export const initApp = async () => {
   return app;
 };
 
-(async () => {
-  const app = await initApp();
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+if (process.env.NODE_ENV !== 'production') {
+  console.log('development');
+  http.createServer(app).listen(PORT, () => {
+    console.log(`HTTP server running on port ${PORT}`);
   });
-})();
+} else {
+  console.log('PRODUCTION');
+  const options2 = {
+    key: fs.readFileSync('../client-key.pem'),
+    cert: fs.readFileSync('../client-cert.pem'),
+  };
+  https.createServer(options2, app).listen(HTTPS_PORT, () => {
+    console.log(`HTTPS server running on port ${HTTPS_PORT}`);
+  });
+}
