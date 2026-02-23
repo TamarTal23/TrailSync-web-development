@@ -10,6 +10,7 @@ import commentRoutes from './routes/commentRoutes';
 import authRoutes from './routes/authRoutes';
 import mongoose from 'mongoose';
 import { setupSwagger } from './swagger';
+import path from 'path';
 
 dotenv.config();
 
@@ -51,8 +52,8 @@ if (process.env.NODE_ENV !== 'production') {
 } else {
   console.log('PRODUCTION');
   const options2 = {
-    key: fs.readFileSync('../../client-key.pem'),
-    cert: fs.readFileSync('../../client-cert.pem'),
+    key: fs.readFileSync(path.resolve(__dirname, '../../client-key.pem')),
+    cert: fs.readFileSync(path.resolve(__dirname, '../../client-cert.pem')),
   };
   https.createServer(options2, app).listen(HTTPS_PORT, () => {
     console.log(`HTTPS server running on port ${HTTPS_PORT}`);
