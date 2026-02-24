@@ -51,11 +51,22 @@ if (process.env.NODE_ENV !== 'production') {
   });
 } else {
   console.log('PRODUCTION');
-  const options= {
-    key: fs.readFileSync(path.resolve(__dirname, '../../client-key.pem')),
-    cert: fs.readFileSync(path.resolve(__dirname, '../../client-cert.pem')),
-  };
-  https.createServer(options, app).listen(HTTPS_PORT, () => {
-    console.log(`HTTPS server running on port ${HTTPS_PORT}`);
-  });
+  try {
+    const keyPath = path.resolve(__dirname, '../client-key.pem');
+    const certPath = path.resolve(__dirname, '../client-cert.pem');
+    
+    console.log(`Loading SSL key from: ${keyPath}`);
+    console.log(`Loading SSL cert from: ${certPath}`);
+    
+    const options = {
+      key: fs.readFileSync(keyPath),
+      cert: fs.readFileSync(certPath),
+    };
+    https.createServer(options, app).listen(HTTPS_PORT, () => {
+      console.log(`HTTPS server running on port ${HTTPS_PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to start HTTPS server:', error);
+    process.exit(1);
+  }
 }
