@@ -36,7 +36,7 @@ app.use('/api/user', userRoutes);
 
 app.use(express.static(path.resolve(__dirname, '../../client-dist')));
 
-app.get("/*", (req, res) => {
+app.get("/:splat*", (req, res) => {
   res.sendFile(path.resolve(__dirname, '../../client-dist', 'index.html'));
 });
 
