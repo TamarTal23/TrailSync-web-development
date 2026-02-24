@@ -44,6 +44,9 @@ export const initApp = async () => {
   return app;
 };
 
+(async () => {
+  const app = await initApp();
+  
 if (process.env.NODE_ENV !== 'production') {
   console.log('development');
   http.createServer(app).listen(PORT, () => {
@@ -66,4 +69,5 @@ if (process.env.NODE_ENV !== 'production') {
     console.error('Failed to start HTTPS server:', error);
     process.exit(1);
   }
-}
+
+}})();
