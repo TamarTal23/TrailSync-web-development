@@ -52,8 +52,8 @@ if (process.env.NODE_ENV !== 'production') {
 } else {
   console.log('PRODUCTION');
   try {
-    const keyPath = path.resolve(__dirname, '../client-key.pem');
-    const certPath = path.resolve(__dirname, '../client-cert.pem');
+    const keyPath = path.resolve(__dirname, './client-key.pem');
+    const certPath = path.resolve(__dirname, './client-cert.pem');
     
     console.log(`Loading SSL key from: ${keyPath}`);
     console.log(`Loading SSL cert from: ${certPath}`);
