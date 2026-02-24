@@ -91,7 +91,10 @@ export const renamePostFiles = (
       fs.renameSync(oldPath, newPath);
     }
 
-    return `http://127.0.0.1:5000/${normalizeFilePath(newPath)}`;
+    const port = process.env.NODE_ENV === 'production' ? process.env.HTTPS_PORT : process.env.PORT;
+    const httpPrefix = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    
+    return `${httpPrefix}://127.0.0.1:${port}/${normalizeFilePath(newPath)}`;
   });
 };
 
