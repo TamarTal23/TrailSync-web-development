@@ -16,7 +16,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const HTTPS_PORT = process.env.PORT || 433;
+const HTTPS_PORT = process.env.HTTPS_PORT || 443;
 
 app.use(cors());
 app.use(express.json());
@@ -51,11 +51,11 @@ if (process.env.NODE_ENV !== 'production') {
   });
 } else {
   console.log('PRODUCTION');
-  const options2 = {
+  const options= {
     key: fs.readFileSync(path.resolve(__dirname, '../../client-key.pem')),
     cert: fs.readFileSync(path.resolve(__dirname, '../../client-cert.pem')),
   };
-  https.createServer(options2, app).listen(HTTPS_PORT, () => {
+  https.createServer(options, app).listen(HTTPS_PORT, () => {
     console.log(`HTTPS server running on port ${HTTPS_PORT}`);
   });
 }
