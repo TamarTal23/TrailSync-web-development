@@ -274,6 +274,7 @@ Respond with JSON only:`;
       searchType: daysRange || maxPrice ? 'combined' : 'title',
       confidence: 0.3,
     };
+
     console.log({ result });
 
     return result;

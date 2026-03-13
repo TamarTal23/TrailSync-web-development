@@ -52,28 +52,28 @@ export const initApp = async () => {
 
 (async () => {
   const app = await initApp();
-  
-if (process.env.NODE_ENV !== 'production') {
-  console.log('development');
-  http.createServer(app).listen(PORT, () => {
-    console.log(`HTTP server running on port ${PORT}`);
-  });
-} else {
-  console.log('PRODUCTION');
-  try {
-    const keyPath = path.resolve(__dirname, '../../client-key.pem');
-    const certPath = path.resolve(__dirname, '../../client-cert.pem');
-    
-    const options = {
-      key: fs.readFileSync(keyPath),
-      cert: fs.readFileSync(certPath),
-    };
-    https.createServer(options, app).listen(HTTPS_PORT, () => {
-      console.log(`HTTPS server running on port ${HTTPS_PORT}`);
-    });
-  } catch (error) {
-    console.error('Failed to start HTTPS server:', error);
-    process.exit(1);
-  }
 
-}})();
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('development');
+    http.createServer(app).listen(PORT, () => {
+      console.log(`HTTP server running on port ${PORT}`);
+    });
+  } else {
+    console.log('PRODUCTION!');
+    try {
+      const keyPath = path.resolve(__dirname, '../../client-key.pem');
+      const certPath = path.resolve(__dirname, '../../client-cert.pem');
+
+      const options = {
+        key: fs.readFileSync(keyPath),
+        cert: fs.readFileSync(certPath),
+      };
+      https.createServer(options, app).listen(HTTPS_PORT, () => {
+        console.log(`HTTPS server running on port ${HTTPS_PORT}`);
+      });
+    } catch (error) {
+      console.error('Failed to start HTTPS server:', error);
+      process.exit(1);
+    }
+  }
+})();
