@@ -1,3 +1,4 @@
+import os from 'os';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -5,6 +6,23 @@ import { Request, Express } from 'express';
 import { AuthRequest } from '../middlewares/authMiddleware';
 
 const defaultMaxFileSize = 5 * 1024 * 1024; // 5 MB
+
+const getHost = (): string => {
+  if (process.env.HOST) return process.env.HOST;
+
+  const nets = os.networkInterfaces();
+  for (const name of Object.keys(nets)) {
+    const addresses = nets[name];
+    if (!addresses) continue;
+    for (const addr of addresses) {
+      if (addr.family === 'IPv4' && !addr.internal) {
+        return addr.address;
+      }
+    }
+  }
+
+  return '127.0.0.1';
+};
 
 export const NEW_IMAGE_PLACEHOLDER = 'new';
 
@@ -93,8 +111,9 @@ export const renamePostFiles = (
 
     const port = process.env.NODE_ENV === 'production' ? process.env.HTTPS_PORT : process.env.PORT;
     const httpPrefix = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-    
-    return `${httpPrefix}://127.0.0.1:${port}/${normalizeFilePath(newPath)}`;
+    const host = getHost();
+
+    return `${httpPrefix}://${host}:${port}/${normalizeFilePath(newPath)}`;
   });
 };
 
