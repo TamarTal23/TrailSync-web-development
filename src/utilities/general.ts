@@ -4,6 +4,8 @@ import { ParsedPostQuery } from '../types/search/searchTypes';
 export const handleCreateRes = <T>(result: T) => (Array.isArray(result) ? result[0] : result);
 
 export const buildFiltersFromParsedQuery = (parsedQuery: Partial<ParsedPostQuery>) => {
+  console.log({ parsedQuery });
+
   const { titleKeywords, descriptionKeywords, daysRange, location, maxPrice } = parsedQuery;
   const filter: Record<string, any> = {};
 
