@@ -3,6 +3,8 @@ import { ParsedPostQuery } from '../types/search/searchTypes';
 
 export const handleCreateRes = <T>(result: T) => (Array.isArray(result) ? result[0] : result);
 
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 export const buildFiltersFromParsedQuery = (parsedQuery: Partial<ParsedPostQuery>) => {
   const { titleKeywords, descriptionKeywords, daysRange, location, maxPrice } = parsedQuery;
   const filter: Record<string, any> = {};
@@ -49,6 +51,24 @@ export const buildFiltersFromParsedQuery = (parsedQuery: Partial<ParsedPostQuery
 
   if (maxPrice) {
     filter.price = { $lte: maxPrice };
+  }
+
+  if (location?.city) {
+    const normalizedCity = location.city.toLowerCase().trim();
+    
+    filter['location.city'] = {
+      $regex: `^${escapeRegExp(normalizedCity)}$`,
+      $options: 'i',
+    };
+  }
+
+  if (location?.country) {
+    const normalizedCountry = location.country.toLowerCase().trim();
+
+    filter['location.country'] = {
+      $regex: `^${escapeRegExp(normalizedCountry)}$`,
+      $options: 'i',
+    };
   }
 
   return filter;
