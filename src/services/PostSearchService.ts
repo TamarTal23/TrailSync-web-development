@@ -1,3 +1,4 @@
+import { log } from 'node:console';
 import Post, { PostType } from '../model/postModel';
 import { ParsedPostQuery } from '../types/search/searchTypes';
 import { buildFiltersFromParsedQuery } from '../utilities/general';
@@ -53,7 +54,10 @@ class PostSearchService {
       })
       .sort({ updatedAt: -1 });
 
-    return await query;
+    const pi = await query;
+    log({ pi });
+
+    return pi;
   }
 }
 

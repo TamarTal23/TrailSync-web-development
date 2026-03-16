@@ -3,6 +3,7 @@ import { LLMQueryResponse } from '../types/llm/llmTypes';
 import { QueryParsingError, QueryValidationError } from '../types/search/errors';
 import { ParsedPostQuery, QueryParsingOptions } from '../types/search/searchTypes';
 import { SYSTEM_PROMPT } from '../utilities/prompt';
+import { cities, countries } from '../utilities/staticLocations';
 import llmClient from './llmClient';
 
 class QueryParserService {
@@ -266,16 +267,29 @@ Respond with JSON only:`;
       maxPrice = parseInt(priceMatch[2] || priceMatch[3] || priceMatch[4]);
     }
 
+    const foundCity = titleKeywords.find((word) =>
+      cities.some((city) => city.toLowerCase() === word.toLocaleLowerCase())
+    );
+
+    const foundCountry = titleKeywords.find((word) =>
+      countries.some((country) => country.toLowerCase() === word.toLocaleLowerCase())
+    );
+
     const result: ParsedPostQuery = {
       titleKeywords,
       descriptionKeywords: descriptionKeywords ?? undefined,
       daysRange,
       maxPrice,
+      location:
+        foundCity || foundCountry
+          ? {
+              country: foundCountry || 'Unknown',
+              ...(foundCity && { city: foundCity }),
+            }
+          : undefined,
       searchType: daysRange || maxPrice ? 'combined' : 'title',
       confidence: 0.3,
     };
-
-    console.log({ result });
 
     return result;
   }
