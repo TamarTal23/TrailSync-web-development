@@ -130,5 +130,9 @@ export const renameProfileFile = (
     fs.renameSync(oldPath, newPath);
   }
 
-  return normalizeFilePath(newPath);
+    const port = process.env.NODE_ENV === 'production' ? process.env.HTTPS_PORT : process.env.PORT;
+    const httpPrefix = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    const host = getHost();
+
+    return `${httpPrefix}://${host}:${port}/${normalizeFilePath(newPath)}`;
 };
