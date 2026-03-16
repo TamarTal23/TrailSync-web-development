@@ -6,15 +6,15 @@ export const handleCreateRes = <T>(result: T) => (Array.isArray(result) ? result
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export const buildFiltersFromParsedQuery = (parsedQuery: Partial<ParsedPostQuery>) => {
-  console.log({ parsedQuery });
-
   const { titleKeywords, descriptionKeywords, daysRange, location, maxPrice } = parsedQuery;
   const filter: Record<string, any> = {};
 
   if (titleKeywords?.length) {
     filter.$or = [
       ...(filter.$or || []),
-      ...titleKeywords.map((keyWord) => ({ title: { $regex: keyWord, $options: 'i' } })),
+      ...titleKeywords.map((keyWord) => ({
+        title: { $regex: keyWord, $options: 'i' },
+      })),
     ];
   }
 
@@ -24,6 +24,20 @@ export const buildFiltersFromParsedQuery = (parsedQuery: Partial<ParsedPostQuery
       ...descriptionKeywords.map((keyWord) => ({
         description: { $regex: keyWord, $options: 'i' },
       })),
+    ];
+  }
+
+  if (location?.city) {
+    filter.$or = [
+      ...(filter.$or || []),
+      { 'location.city': { $regex: location.city, $options: 'i' } },
+    ];
+  }
+
+  if (location?.country) {
+    filter.$or = [
+      ...(filter.$or || []),
+      { 'location.country': { $regex: location.country, $options: 'i' } },
     ];
   }
 

@@ -2,7 +2,7 @@ import User from '../model/userModel';
 import { Request, Response } from 'express';
 import BaseController from './baseController';
 import { StatusCodes } from 'http-status-codes';
-import { deleteFile, normalizeFilePath } from '../utilities/photoUpload';
+import { deleteFile, normalizeFilePath, renameProfileFile } from '../utilities/photoUpload';
 import bcrypt from 'bcrypt';
 import { AuthRequest } from '../middlewares/authMiddleware';
 
@@ -34,7 +34,10 @@ class UserController extends BaseController {
           deleteFile(user.profilePicture);
         }
 
-        req.body.profilePicture = `http://127.0.0.1:5000/${normalizeFilePath(req.file.path)}`;
+        req.body.profilePicture = renameProfileFile(
+          req.file.path,
+          user._id.toString(),
+        );
       }
 
       if (req.body.password) {
