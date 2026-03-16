@@ -59,15 +59,15 @@ describe('general utils', () => {
 
     test('should build location.country filter', () => {
       const result = buildFiltersFromParsedQuery({ location: { country: 'Japan' } });
-      expect(result['location.country']).toBe('Japan');
+      expect(result['location.country']).toEqual({ $regex: '^japan$', $options: 'i' });
     });
 
     test('should build location.city and location.country filter', () => {
       const result = buildFiltersFromParsedQuery({
         location: { country: 'Japan', city: 'Tokyo' },
       });
-      expect(result['location.country']).toBe('Japan');
-      expect(result['location.city']).toBe('Tokyo');
+      expect(result['location.country']).toEqual({ $regex: '^japan$', $options: 'i' });
+      expect(result['location.city']).toEqual({ $regex: '^tokyo$', $options: 'i' });
     });
   });
 
@@ -89,8 +89,8 @@ describe('general utils', () => {
 
     test('should build filter from city and country', () => {
       const result = buildFilterQuery({ city: 'Tokyo', country: 'Japan' });
-      expect(result['location.city']).toBe('Tokyo');
-      expect(result['location.country']).toBe('Japan');
+      expect(result['location.city']).toEqual({ $regex: '^tokyo$', $options: 'i' });
+      expect(result['location.country']).toEqual({ $regex: '^japan$', $options: 'i' });
     });
 
     test('should pass through unhandled query params', () => {
