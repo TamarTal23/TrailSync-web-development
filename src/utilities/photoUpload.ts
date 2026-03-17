@@ -98,7 +98,7 @@ export const normalizeFilePath = (filePath: string) => filePath.replace(/\\/g, '
 export const renamePostFiles = (
   oldPaths: string[],
   createdId: string,
-  placeholder: string
+  placeholder: string = NEW_IMAGE_PLACEHOLDER
 ): string[] => {
   return oldPaths.map((oldPath) => {
     const filename = path.basename(oldPath);
