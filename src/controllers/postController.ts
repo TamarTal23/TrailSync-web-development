@@ -185,9 +185,11 @@ class PostController extends BaseController {
       }
 
       if (req.files && Array.isArray(req.files) && req.files.length > 0) {
-        const newPhotoPaths = req.files.map(
-          (file: Express.Multer.File) => `http://127.0.0.1:5000/${normalizeFilePath(file.path)}`
+        const newPhotoPaths = renamePostFiles(
+          req.files.map((file: Express.Multer.File) => file.path),
+          postId,
         );
+
 
         currentPhotos = uniq([...currentPhotos, ...newPhotoPaths]);
       }
