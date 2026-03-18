@@ -18,7 +18,7 @@ import path from 'node:path';
 
 let app: Express;
 
-const POST_URL = '/post';
+const POST_URL = '/api/post';
 
 beforeAll(async () => {
   app = await initApp();

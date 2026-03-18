@@ -16,7 +16,7 @@ import path from 'node:path';
 
 let app: Express;
 
-const USER_URL = '/user';
+const USER_URL = '/api/user';
 
 beforeAll(async () => {
   app = await initApp();
