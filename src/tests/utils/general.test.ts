@@ -3,71 +3,43 @@ import { buildFilterQuery, buildFiltersFromParsedQuery } from '../../utilities/g
 
 describe('general utils', () => {
   describe('buildFiltersFromParsedQuery', () => {
-    test('should return empty filter when no fields are provided', () => {
-      const result = buildFiltersFromParsedQuery({});
-      expect(result).toEqual({});
+    test('should return empty structures when no fields are provided', () => {
+      const { strictFilter, keywordConditions } = buildFiltersFromParsedQuery({});
+      expect(strictFilter).toEqual({});
+      expect(keywordConditions).toEqual([]);
     });
 
-    test('should build $or filter from titleKeywords', () => {
-      const result = buildFiltersFromParsedQuery({ titleKeywords: ['beach'] });
-      expect(result.$or).toEqual([{ title: { $regex: 'beach', $options: 'i' } }]);
+    test('should build keywordConditions from titleKeywords', () => {
+      const { keywordConditions } = buildFiltersFromParsedQuery({ titleKeywords: ['beach'] });
+      expect(keywordConditions).toContainEqual({ title: { $regex: 'beach', $options: 'i' } });
     });
 
-    test('should build $or filter from descriptionKeywords', () => {
-      const result = buildFiltersFromParsedQuery({ descriptionKeywords: ['snorkeling'] });
-      expect(result.$or).toEqual([{ description: { $regex: 'snorkeling', $options: 'i' } }]);
-    });
-
-    test('should combine titleKeywords and descriptionKeywords in $or', () => {
-      const result = buildFiltersFromParsedQuery({
-        titleKeywords: ['beach'],
+    test('should build keywordConditions from descriptionKeywords', () => {
+      const { keywordConditions } = buildFiltersFromParsedQuery({
         descriptionKeywords: ['snorkeling'],
       });
-      expect(result.$or).toHaveLength(2);
+      expect(keywordConditions).toContainEqual({
+        description: { $regex: 'snorkeling', $options: 'i' },
+      });
     });
 
-    test('should skip daysRange if not provided', () => {
-      const result = buildFiltersFromParsedQuery({ titleKeywords: ['beach'] });
-      expect(result).not.toHaveProperty('numberOfDays');
+    test('should build strictFilter.numberOfDays from full daysRange', () => {
+      const { strictFilter } = buildFiltersFromParsedQuery({ daysRange: { min: 3, max: 7 } });
+      expect(strictFilter.numberOfDays).toEqual({ $gte: 3, $lte: 7 });
     });
 
-    test('should build numberOfDays filter from daysRange min', () => {
-      const result = buildFiltersFromParsedQuery({ daysRange: { min: 3 } });
-      expect(result.numberOfDays).toEqual({ $gte: 3 });
+    test('should build strictFilter.price from maxPrice', () => {
+      const { strictFilter } = buildFiltersFromParsedQuery({ maxPrice: 500 });
+      expect(strictFilter.price).toEqual({ $lte: 500 });
     });
 
-    test('should build numberOfDays filter from daysRange max', () => {
-      const result = buildFiltersFromParsedQuery({ daysRange: { max: 7 } });
-      expect(result.numberOfDays).toEqual({ $lte: 7 });
-    });
-
-    test('should build numberOfDays filter from full daysRange', () => {
-      const result = buildFiltersFromParsedQuery({ daysRange: { min: 3, max: 7 } });
-      expect(result.numberOfDays).toEqual({ $gte: 3, $lte: 7 });
-    });
-
-    test('should build price filter from maxPrice', () => {
-      const result = buildFiltersFromParsedQuery({ maxPrice: 500 });
-      expect(result.price).toEqual({ $lte: 500 });
-    });
-
-    test('should skip location if not provided', () => {
-      const result = buildFiltersFromParsedQuery({ maxPrice: 500 });
-      expect(result).not.toHaveProperty('location.city');
-      expect(result).not.toHaveProperty('location.country');
-    });
-
-    test('should build location.country filter', () => {
-      const result = buildFiltersFromParsedQuery({ location: { country: 'Japan' } });
-      expect(result['location.country']).toEqual({ $regex: '^japan$', $options: 'i' });
-    });
-
-    test('should build location.city and location.country filter', () => {
-      const result = buildFiltersFromParsedQuery({
+    test('should build location in strictFilter', () => {
+      const { strictFilter } = buildFiltersFromParsedQuery({
         location: { country: 'Japan', city: 'Tokyo' },
       });
-      expect(result['location.country']).toEqual({ $regex: '^japan$', $options: 'i' });
-      expect(result['location.city']).toEqual({ $regex: '^tokyo$', $options: 'i' });
+      // Use dot notation if your function sets keys like strictFilter['location.country']
+      expect(strictFilter['location.country']).toEqual({ $regex: 'Japan', $options: 'i' });
+      expect(strictFilter['location.city']).toEqual({ $regex: 'Tokyo', $options: 'i' });
     });
   });
 

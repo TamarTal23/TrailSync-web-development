@@ -1,4 +1,3 @@
-import { log } from 'node:console';
 import Post, { PostType } from '../model/postModel';
 import { ParsedPostQuery } from '../types/search/searchTypes';
 import { buildFiltersFromParsedQuery } from '../utilities/general';
@@ -42,22 +41,29 @@ class PostSearchService {
   }
 
   private async searchDatabase(parsedQuery: ParsedPostQuery): Promise<PostType[]> {
-    const filters = buildFiltersFromParsedQuery(parsedQuery);
+    const { strictFilter, keywordConditions } = buildFiltersFromParsedQuery(parsedQuery);
 
-    let query = Post.find(filters)
-      .populate({
-        path: 'sender',
-        select: 'username email profilePicture',
-      })
-      .populate({
-        path: 'comments',
-      })
+    let finalFilter = { ...strictFilter };
+
+    if (keywordConditions.length > 0) {
+      finalFilter.$or = keywordConditions;
+    }
+
+    let posts = await Post.find(finalFilter)
+      .populate({ path: 'sender', select: 'username email profilePicture' })
+      .populate({ path: 'comments' })
       .sort({ updatedAt: -1 });
 
-    const pi = await query;
-    log({ pi });
+    if (posts.length === 0 && keywordConditions.length > 0) {
+      console.log('Relaxing search: ignoring keywords, keeping strict filters.');
 
-    return pi;
+      posts = await Post.find(strictFilter)
+        .populate({ path: 'sender', select: 'username email profilePicture' })
+        .populate({ path: 'comments' })
+        .sort({ updatedAt: -1 });
+    }
+
+    return posts;
   }
 }
 
