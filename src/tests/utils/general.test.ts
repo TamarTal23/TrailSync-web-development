@@ -38,8 +38,8 @@ describe('general utils', () => {
         location: { country: 'Japan', city: 'Tokyo' },
       });
       // Use dot notation if your function sets keys like strictFilter['location.country']
-      expect(strictFilter['location.country']).toEqual({ $regex: 'Japan', $options: 'i' });
-      expect(strictFilter['location.city']).toEqual({ $regex: 'Tokyo', $options: 'i' });
+      expect(strictFilter['location.country']).toEqual({ $regex: '^japan$', $options: 'i' });
+      expect(strictFilter['location.city']).toEqual({ $regex: '^tokyo$', $options: 'i' });
     });
   });
 
