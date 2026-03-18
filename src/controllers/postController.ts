@@ -237,6 +237,60 @@ class PostController extends BaseController {
         .json({ error: (error as Error)?.message ?? 'An unknown error occurred' });
     }
   };
+
+  likePost = async (req: AuthRequest, res: Response) => {
+    const userId = req.userId;
+    const postId = req.params.id;
+
+    if (!userId) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Unauthorized' });
+    }
+
+    try {
+      const updatedPost = await Post.findByIdAndUpdate(
+        postId,
+        { $addToSet: { likes: userId } },
+        { new: true }
+      );
+
+      if (!updatedPost) {
+        return res.status(StatusCodes.NOT_FOUND).json({ error: 'Post not found' });
+      }
+
+      return res.status(StatusCodes.OK).json(updatedPost);
+    } catch (error) {
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: (error as Error)?.message ?? 'An unknown error occurred' });
+    }
+  };
+
+  unlikePost = async (req: AuthRequest, res: Response) => {
+    const userId = req.userId;
+    const postId = req.params.id;
+
+    if (!userId) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Unauthorized' });
+    }
+
+    try {
+      const updatedPost = await Post.findByIdAndUpdate(
+        postId,
+        { $pull: { likes: userId } },
+        { new: true }
+      );
+
+      if (!updatedPost) {
+        return res.status(StatusCodes.NOT_FOUND).json({ error: 'Post not found' });
+      }
+
+      return res.status(StatusCodes.OK).json(updatedPost);
+    } catch (error) {
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ error: (error as Error)?.message ?? 'An unknown error occurred' });
+    }
+  };
 }
 
 export default new PostController();

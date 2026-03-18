@@ -205,6 +205,7 @@ export const normalizePost = (post: PostType & { id: string }) => ({
   },
   description: post.description,
   photos: post.photos,
+  likes: post.likes
 });
 
 export const normalizeComment = (comment: CommentType & { id: string }) => ({

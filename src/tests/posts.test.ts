@@ -95,7 +95,11 @@ describe('Posts API tests', () => {
         location: post.location,
         description: post.description,
         photos: post.photos,
+        likes: [],
       });
+
+      expect(Array.isArray(response.body.likes)).toBe(true);
+      expect(response.body.likes).toEqual([]);
     }
   });
 
@@ -159,6 +163,8 @@ describe('Posts API tests', () => {
     expect(response.statusCode).toBe(StatusCodes.OK);
     expect(Array.isArray(response.body)).toBe(true);
     expect(response.body).not.toHaveProperty('hasMore');
+    expect(response.body[0]).toHaveProperty('likes');
+    expect(Array.isArray(response.body[0].likes)).toBe(true);
   });
 
   test('get posts with only page parameter (no batchSize) returns all posts', async () => {
@@ -195,6 +201,7 @@ describe('Posts API tests', () => {
         location: expectedPost.location,
         description: expectedPost.description,
         photos: expectedPost.photos,
+        likes: [],
       };
 
       expect(normalizedResponse).toContainEqual(expect.objectContaining(expectedPostNormalized));
@@ -236,6 +243,7 @@ describe('Posts API tests', () => {
       location: testedPost.location,
       description: testedPost.description,
       photos: testedPost.photos,
+      likes: [],
     });
   });
 
@@ -433,6 +441,63 @@ describe('Posts API tests', () => {
     expect(response.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
   });
 
+  test('like post without auth', async () => {
+    const response = await request(app).post(`${POST_URL}/${postsList[0]._id}/like`);
+
+    expect(response.statusCode).toBe(StatusCodes.UNAUTHORIZED);
+  });
+
+  test('like post adds user id to likes', async () => {
+    const response = await request(app)
+      .post(`${POST_URL}/${postsList[0]._id}/like`)
+      .set('Authorization', `Bearer ${secondUser.token}`);
+
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(Array.isArray(response.body.likes)).toBe(true);
+    expect(response.body.likes).toContain(secondUser.id);
+  });
+
+  test('like post is idempotent for same user', async () => {
+    const response = await request(app)
+      .post(`${POST_URL}/${postsList[0]._id}/like`)
+      .set('Authorization', `Bearer ${secondUser.token}`);
+
+    expect(response.statusCode).toBe(StatusCodes.OK);
+
+    const likesBySecondUser = response.body.likes.filter((userId: string) => userId === secondUser.id);
+    expect(likesBySecondUser.length).toBe(1);
+  });
+
+  test('unlike post removes user id from likes', async () => {
+    const response = await request(app)
+      .delete(`${POST_URL}/${postsList[0]._id}/like`)
+      .set('Authorization', `Bearer ${secondUser.token}`);
+
+    expect(response.statusCode).toBe(StatusCodes.OK);
+    expect(Array.isArray(response.body.likes)).toBe(true);
+    expect(response.body.likes).not.toContain(secondUser.id);
+  });
+
+  test('like post with non-existing id returns not found', async () => {
+    const nonExistingId = new mongoose.Types.ObjectId();
+
+    const response = await request(app)
+      .post(`${POST_URL}/${nonExistingId}/like`)
+      .set('Authorization', `Bearer ${userData.token}`);
+
+    expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+  });
+
+  test('unlike post with non-existing id returns not found', async () => {
+    const nonExistingId = new mongoose.Types.ObjectId();
+
+    const response = await request(app)
+      .delete(`${POST_URL}/${nonExistingId}/like`)
+      .set('Authorization', `Bearer ${userData.token}`);
+
+    expect(response.statusCode).toBe(StatusCodes.NOT_FOUND);
+  });
+
   // Post Search API Tests
   describe('Post Search API', () => {
     test('search with valid query returns 200 with post array', async () => {
@@ -457,6 +522,8 @@ describe('Posts API tests', () => {
         expect(post).toHaveProperty('description');
         expect(post).toHaveProperty('photos');
         expect(Array.isArray(post.photos)).toBe(true);
+        expect(post).toHaveProperty('likes');
+        expect(Array.isArray(post.likes)).toBe(true);
       }
     });
 

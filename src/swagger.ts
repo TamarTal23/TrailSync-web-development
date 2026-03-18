@@ -81,6 +81,7 @@ const options: swaggerJsdoc.Options = {
             'location',
             'description',
             'photos',
+            'likes',
           ],
           properties: {
             _id: {
@@ -132,6 +133,13 @@ const options: swaggerJsdoc.Options = {
                 type: 'string',
               },
               description: 'Array of photo paths',
+            },
+            likes: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              description: 'Array of user ids that liked the post',
             },
             createdAt: {
               type: 'string',
