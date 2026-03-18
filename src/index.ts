@@ -50,7 +50,7 @@ export const initApp = async () => {
   return app;
 };
 
-(async () => {
+if (process.env.NODE_ENV !== 'test') (async () => {
   const app = await initApp();
 
   if (process.env.NODE_ENV !== 'production') {

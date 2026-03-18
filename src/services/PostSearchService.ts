@@ -54,7 +54,7 @@ class PostSearchService {
       .populate({ path: 'comments' })
       .sort({ updatedAt: -1 });
 
-    if (posts.length === 0 && keywordConditions.length > 0) {
+    if (posts.length === 0 && keywordConditions.length > 0 && Object.keys(strictFilter).length > 0) {
       console.log('Relaxing search: ignoring keywords, keeping strict filters.');
 
       posts = await Post.find(strictFilter)

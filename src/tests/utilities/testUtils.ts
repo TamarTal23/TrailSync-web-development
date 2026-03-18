@@ -25,7 +25,7 @@ export const registerUser = async (app: Express, user: UserData, cleanup = false
     await User.deleteMany({ email: user.email });
   }
 
-  const res = await request(app).post('/auth/register').send(user);
+  const res = await request(app).post('/api/auth/register').send(user);
   user.token = res.body.tokens?.token;
   user.refreshTokens = res.body.tokens?.refreshToken;
   user.id = res.body.userId;

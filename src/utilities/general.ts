@@ -10,11 +10,11 @@ export const buildFiltersFromParsedQuery = (parsedQuery: Partial<ParsedPostQuery
   const keywordConditions: any[] = [];
 
   if (location?.country) {
-    strictFilter['location.country'] = { $regex: location.country, $options: 'i' };
+    strictFilter['location.country'] = { $regex: `^${location.country.toLowerCase()}$`, $options: 'i' };
   }
 
   if (location?.city) {
-    strictFilter['location.city'] = { $regex: location.city, $options: 'i' };
+    strictFilter['location.city'] = { $regex: `^${location.city.toLowerCase()}$`, $options: 'i' };
   }
 
   if (daysRange && (daysRange.min !== undefined || daysRange.max !== undefined)) {

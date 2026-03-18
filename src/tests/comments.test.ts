@@ -20,7 +20,7 @@ let app: Express;
 let commentsData: Array<CommentData> = [];
 let postIds: mongoose.Types.ObjectId[] = [];
 
-const COMMENT_URL = '/comment';
+const COMMENT_URL = '/api/comment';
 
 beforeAll(async () => {
   app = await initApp();
