@@ -7,7 +7,7 @@ import { AuthRequest } from '../middlewares/authMiddleware';
 
 const defaultMaxFileSize = 5 * 1024 * 1024; // 5 MB
 
-const getHost = (): string => {
+export const getHost = (): string => {
   if (process.env.HOST) return process.env.HOST;
 
   const nets = os.networkInterfaces();

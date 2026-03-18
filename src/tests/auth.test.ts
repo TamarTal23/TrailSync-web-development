@@ -22,13 +22,13 @@ afterAll(async () => {
 
 describe('Test Auth', () => {
   test('test creating a post without token fails', async () => {
-    const response = await request(app).post('/post').send(postsList[0]);
+    const response = await request(app).post('/api/post').send(postsList[0]);
     expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
   });
 
   test('test creating post with Bearer but no token', async () => {
     const response = await request(app)
-      .post('/post')
+      .post('/api/post')
       .set('Authorization', 'Bearer ')
       .send(postsList[0]);
     expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
@@ -108,7 +108,7 @@ describe('Test Auth', () => {
   test('create a post with token succeeds', async () => {
     const postData = postsList[0];
     const response = await request(app)
-      .post('/post')
+      .post('/api/post')
       .set('Authorization', 'Bearer ' + userData.token)
       .send(postData);
     expect(response.status).toBe(StatusCodes.CREATED);
@@ -118,7 +118,7 @@ describe('Test Auth', () => {
     const postData = postsList[0];
     const compromisedToken = userData.token + 'a';
     const response = await request(app)
-      .post('/post')
+      .post('/api/post')
       .set('Authorization', 'Bearer ' + compromisedToken)
       .send(postData);
     expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
@@ -181,7 +181,7 @@ describe('Test Auth', () => {
 
     const { _id, ...postDataWithoutId } = postData;
     const response = await request(app)
-      .post('/post')
+      .post('/api/post')
       .set('Authorization', 'Bearer ' + userData.token)
       .send(postData);
     expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
@@ -198,7 +198,7 @@ describe('Test Auth', () => {
 
     //try to create post again
     const retryResponse = await request(app)
-      .post('/post')
+      .post('/api/post')
       .set('Authorization', 'Bearer ' + userData.token)
       .send(postDataWithoutId);
 

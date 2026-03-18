@@ -15,6 +15,7 @@ import {
 } from './utilities/testUtils';
 import mongoose from 'mongoose';
 import path from 'node:path';
+import { getHost } from '../utilities/photoUpload';
 
 let app: Express;
 
@@ -83,7 +84,7 @@ describe('Posts API tests', () => {
       // Save the generated ID back to the postsList
       post._id = response.body.id;
       post.photos = post.photos.map(
-        (photo) => `http://127.0.0.1:5000/uploads/posts/${response.body.id}-${photo}`
+        (photo) => `http://${getHost()}:5000/uploads/posts/${response.body.id}-${photo}`
       );
 
       const normalized = normalizePost(response.body);
